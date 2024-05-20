@@ -1,0 +1,59 @@
+package com.jh.restaurantreservationpj.restaurant.domain;
+
+import com.jh.restaurantreservationpj.config.BaseTimeEntity;
+import com.jh.restaurantreservationpj.member.domain.Member;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
+@SQLDelete(sql = "UPDATE restaurant SET del_date = now() WHERE id=?")
+@SQLRestriction("del_date IS NULL")
+public class Restaurant extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // PK
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member manager; // 관리자(점장)
+
+    @Column
+    private String code; // 우편번호
+
+    @Column(nullable = false)
+    private String siDo; // 시/도
+
+    @Column(nullable = false)
+    private String gu; // 구
+
+    @Column
+    private String address1; // 도로명 주소
+
+    @Column
+    private String address2; // 지번 주소
+
+    @Column
+    private String detailAddress; // 상세 주소
+
+    @Column(nullable = false)
+    private String totalAddress;
+
+    @Column(nullable = false, length = 5000)
+    private String description; // 매장 설명
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Sales isOpen; // 영업 여부
+
+    @Column
+    private LocalDateTime delDate; // 삭제 날짜
+}
