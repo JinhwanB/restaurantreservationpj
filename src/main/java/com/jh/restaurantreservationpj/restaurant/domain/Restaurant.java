@@ -50,6 +50,12 @@ public class Restaurant extends BaseTimeEntity {
     @Column(nullable = false, length = 5000)
     private String description; // 매장 설명
 
+    @Column
+    private String openTime; // 오픈 시간(null인 경우 24시간 운영)
+
+    @Column
+    private String closeTime; // 마감 시간
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Sales isOpen; // 영업 여부
