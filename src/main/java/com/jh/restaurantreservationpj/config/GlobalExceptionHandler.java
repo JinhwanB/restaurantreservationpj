@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     // 404에러 핸들러
     @ExceptionHandler(NoHandlerFoundException.class)
     private ResponseEntity<GlobalResponse<?>> handleNotFoundException(NoHandlerFoundException e){
-        log.error("404 NotFound");
+        log.error("404 NotFound = {}", e.getMessage());
 
         return new ResponseEntity<>(GlobalResponse.toGlobalResponseFail(404, "요청하신 페이지를 찾을 수 없습니다."), HttpStatus.NOT_FOUND);
     }
