@@ -1,5 +1,6 @@
 package com.jh.restaurantreservationpj.config;
 
+import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,8 +46,16 @@ public class GlobalExceptionHandler {
     // 매장 관련 에러 핸들러 -> 400에러
     @ExceptionHandler(RestaurantException.class)
     private ResponseEntity<GlobalResponse<?>> handleRestaurantException(RestaurantException e){
-        log.error("매장 관련 exception");
+        log.error("매장 관련 exception = {}", e.getRestaurantErrorCode().getMessage());
 
         return ResponseEntity.badRequest().body(GlobalResponse.toGlobalResponseFail(e.getRestaurantErrorCode().getStatus(), e.getRestaurantErrorCode().getMessage()));
+    }
+
+    // 회원 관련 에러 핸들러 -> 400에러
+    @ExceptionHandler(MemberException.class)
+    private ResponseEntity<GlobalResponse<?>> handleMemberException(MemberException e){
+        log.error("회원 관련 exception = {}", e.getMemberErrorCode().getMessage());
+
+        return ResponseEntity.badRequest().body(GlobalResponse.toGlobalResponseFail(e.getMemberErrorCode().getStatus(), e.getMemberErrorCode().getMessage()));
     }
 }
