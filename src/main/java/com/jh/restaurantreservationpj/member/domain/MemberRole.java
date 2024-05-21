@@ -14,10 +14,6 @@ public class MemberRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_pk", nullable = false)
-    private Member member;
-
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role; // 권한
 }
