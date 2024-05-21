@@ -2,6 +2,7 @@ package com.jh.restaurantreservationpj.restaurant.domain;
 
 import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
+import com.jh.restaurantreservationpj.restaurant.dto.CheckRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,6 +50,17 @@ public class Restaurant extends BaseTimeEntity {
     public CreateRestaurantDto.Response toCreateResponse(){
         return CreateRestaurantDto.Response.builder()
                 .name(name)
+                .build();
+    }
+
+    // Entity -> CheckResponse
+    public CheckRestaurantDto.Response toCheckResponse(){
+        return CheckRestaurantDto.Response.builder()
+                .name(name)
+                .description(description)
+                .totalAddress(totalAddress)
+                .openTime(openTime != null ? openTime + "시" : null)
+                .closeTime(closeTime != null ? closeTime + "시" : null)
                 .build();
     }
 }
