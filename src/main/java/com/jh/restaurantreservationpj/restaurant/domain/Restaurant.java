@@ -2,6 +2,7 @@ package com.jh.restaurantreservationpj.restaurant.domain;
 
 import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
+import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -43,4 +44,11 @@ public class Restaurant extends BaseTimeEntity {
 
     @Column
     private LocalDateTime delDate; // 삭제 날짜
+
+    // Entity -> CreateResponse
+    public CreateRestaurantDto.Response toCreateResponse(){
+        return CreateRestaurantDto.Response.builder()
+                .name(name)
+                .build();
+    }
 }
