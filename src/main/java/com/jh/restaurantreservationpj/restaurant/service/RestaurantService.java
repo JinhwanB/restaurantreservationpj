@@ -25,21 +25,21 @@ public class RestaurantService {
      * 매장 등록 서비스
      */
     public CreateRestaurantDto.Response createRestaurant(CreateRestaurantDto.Request request){
-        String userId = request.getUserId();
+        String userId = request.getUserId().trim();
         Member manager = memberRepository.findByUserId(userId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
-        String name = request.getName();
+        String name = request.getName().trim();
         if(restaurantRepository.existsByName(name)){
             throw new RestaurantException(RestaurantErrorCode.ALREADY_EXIST_NAME);
         }
         
         Restaurant restaurant = Restaurant.builder()
                 .manager(manager)
-                .name(request.getName())
-                .totalAddress(request.getTotalAddress())
-                .description(request.getDescription())
-                .openTime(request.getOpenTime())
-                .closeTime(request.getCloseTime())
+                .name(name)
+                .totalAddress(request.getTotalAddress().trim())
+                .description(request.getDescription().trim())
+                .openTime(request.getOpenTime().trim())
+                .closeTime(request.getCloseTime().trim())
                 .build();
         Restaurant save = restaurantRepository.save(restaurant);
         return save.toCreateResponse();
