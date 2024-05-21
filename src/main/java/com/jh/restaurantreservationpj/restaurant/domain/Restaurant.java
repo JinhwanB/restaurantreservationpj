@@ -26,26 +26,8 @@ public class Restaurant extends BaseTimeEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member manager; // 관리자(점장)
 
-    @Column
-    private String code; // 우편번호
-
     @Column(nullable = false)
-    private String siDo; // 시/도
-
-    @Column(nullable = false)
-    private String gu; // 구
-
-    @Column
-    private String address1; // 도로명 주소
-
-    @Column
-    private String address2; // 지번 주소
-
-    @Column
-    private String detailAddress; // 상세 주소
-
-    @Column(nullable = false)
-    private String totalAddress;
+    private String totalAddress; // 주소
 
     @Column(nullable = false, length = 5000)
     private String description; // 매장 설명
