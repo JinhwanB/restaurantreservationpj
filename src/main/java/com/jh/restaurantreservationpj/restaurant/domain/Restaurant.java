@@ -27,6 +27,9 @@ public class Restaurant extends BaseTimeEntity {
     private Member manager; // 관리자(점장)
 
     @Column(nullable = false)
+    private String name; // 매장명
+
+    @Column(nullable = false)
     private String totalAddress; // 주소
 
     @Column(length = 5000)
@@ -37,10 +40,6 @@ public class Restaurant extends BaseTimeEntity {
 
     @Column
     private String closeTime; // 마감 시간
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Sales isOpen; // 영업 여부
 
     @Column
     private LocalDateTime delDate; // 삭제 날짜
