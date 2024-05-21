@@ -7,6 +7,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,11 +23,14 @@ public class Member extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String userId;
+    private String userId; // 아이디
 
     @Column(nullable = false)
-    private String userPWD;
+    private String userPWD; // 비밀번호
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<MemberRole> memberRoles; // 권한
 
     @Column
-    private LocalDateTime delDate;
+    private LocalDateTime delDate; // 삭제 날짜
 }
