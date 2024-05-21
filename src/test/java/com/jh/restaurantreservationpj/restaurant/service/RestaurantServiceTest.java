@@ -5,7 +5,8 @@ import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.domain.Role;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
-import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
+import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
+import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 class RestaurantServiceTest {
-
-    @Autowired
-    private RestaurantRepository restaurantRepository;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -66,5 +64,16 @@ class RestaurantServiceTest {
         CreateRestaurantDto.Response response = restaurantService.createRestaurant(request);
 
         assertThat(response.getName()).isEqualTo("매장 이름");
+    }
+
+    @Test
+    @DisplayName("매장 등록 서비스 실패 - 중복된 매장명")
+    void failCreate(){
+        try{
+            restaurantService.createRestaurant(request);
+            restaurantService.createRestaurant(request);
+        }catch (RestaurantException e){
+            assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.ALREADY_EXIST_NAME.getMessage());
+        }
     }
 }
