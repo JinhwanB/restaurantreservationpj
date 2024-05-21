@@ -1,0 +1,63 @@
+package com.jh.restaurantreservationpj.restaurant.repository;
+
+import com.jh.restaurantreservationpj.member.domain.Member;
+import com.jh.restaurantreservationpj.member.domain.MemberRole;
+import com.jh.restaurantreservationpj.member.domain.Role;
+import com.jh.restaurantreservationpj.member.repository.MemberRepository;
+import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest
+@Transactional
+class RestaurantRepositoryTest {
+
+    @Autowired
+    private RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @BeforeEach
+    void before(){
+        MemberRole memberRole = MemberRole.builder()
+                .role(Role.ROLE_ADMIN)
+                .build();
+
+        List<MemberRole> list = new ArrayList<>();
+        list.add(memberRole);
+
+        Member member = Member.builder()
+                .userId("test")
+                .userPWD("1234")
+                .memberRoles(list)
+                .build();
+
+        Member save = memberRepository.save(member);
+
+        Restaurant restaurant = Restaurant.builder()
+                .name("매장 이름")
+                .closeTime("22")
+                .openTime("08")
+                .description("설명")
+                .totalAddress("주소")
+                .manager(save)
+                .build();
+        restaurantRepository.save(restaurant);
+    }
+
+    @Test
+    @DisplayName("매장명으로 매장 찾기")
+    void findByName(){
+        assertThat(restaurantRepository.existsByName("매장 이름")).isEqualTo(true);
+    }
+}
