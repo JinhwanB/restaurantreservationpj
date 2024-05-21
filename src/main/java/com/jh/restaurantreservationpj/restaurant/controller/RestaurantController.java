@@ -28,8 +28,8 @@ public class RestaurantController {
     @PostMapping("/restaurant")
     public ResponseEntity<GlobalResponse<CreateRestaurantDto.Response>> register(@Valid @RequestBody CreateRestaurantDto.Request request){
         // 오픈시간과 마감시간 유효성 검증
-        String openTime = request.getOpenTime().trim();
-        String closeTime = request.getCloseTime().trim();
+        String openTime = request.getOpenTime() != null ? request.getOpenTime().trim() : null;
+        String closeTime = request.getCloseTime() != null ? request.getCloseTime().trim() : null;
         validOfOpenTimeAndCloseTime(openTime, closeTime);
 
         CreateRestaurantDto.Response response = restaurantService.createRestaurant(request);
@@ -39,9 +39,9 @@ public class RestaurantController {
 
     // 매장 수정 컨트롤러
     @PutMapping("/restaurant/{restaurantName}")
-    public ResponseEntity<GlobalResponse<CheckRestaurantDto.Response>> modify(@PathVariable @NotBlank String restaurantName, @Valid @RequestBody ModifiedRestaurantDto.Request request){
-        String openTime = request.getOpenTime().trim();
-        String closeTime = request.getCloseTime().trim();
+    public ResponseEntity<GlobalResponse<CheckRestaurantDto.Response>> modify(@PathVariable @NotBlank(message = "매장 이름은 필수로 입력하여야 합니다.") String restaurantName, @Valid @RequestBody ModifiedRestaurantDto.Request request){
+        String openTime = request.getOpenTime() != null ? request.getOpenTime().trim() : null;
+        String closeTime = request.getCloseTime() != null ? request.getCloseTime().trim() : null;
         validOfOpenTimeAndCloseTime(openTime, closeTime); // 오픈시간과 마감시간 유효성 검사
 
         CheckRestaurantDto.Response response = restaurantService.modifyRestaurant(restaurantName, request);
