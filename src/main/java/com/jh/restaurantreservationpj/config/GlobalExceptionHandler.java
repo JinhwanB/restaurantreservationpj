@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,6 +26,14 @@ public class GlobalExceptionHandler {
         log.error("404 NotFound = {}", e.getMessage());
 
         return new ResponseEntity<>(GlobalResponse.toGlobalResponseFail(404, "요청하신 페이지를 찾을 수 없습니다."), HttpStatus.NOT_FOUND);
+    }
+
+    // 405에러 핸들러
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    private ResponseEntity<GlobalResponse<?>> handle405(HttpRequestMethodNotSupportedException e){
+        log.error("405 error = {}", e.getMessage());
+
+        return new ResponseEntity<>(GlobalResponse.toGlobalResponseFail(405, "해당 url을 지원하지 않습니다. Http Method(GET, PUT, POST, DELETE)가 정확한지 확인해주세요."), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     // 유효성 검증 에러 핸들러 -> 400 에러
