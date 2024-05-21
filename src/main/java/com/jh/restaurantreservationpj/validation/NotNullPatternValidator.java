@@ -16,7 +16,7 @@ public class NotNullPatternValidator implements ConstraintValidator<NotNullPatte
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        if(value == null || value.trim().isEmpty()){ // null 또는 빈값인 경우 허용
+        if(value == null){ // null인 경우 허용
             return true;
         }
 
