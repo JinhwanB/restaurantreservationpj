@@ -2,6 +2,10 @@ spring:
   application:
     name: restaurantreservationpj
 
+  web:
+    resources:
+      add-mappings: false
+
   jpa:
     hibernate:
       ddl-auto: create
