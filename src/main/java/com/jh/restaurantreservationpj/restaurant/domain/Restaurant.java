@@ -29,7 +29,7 @@ public class Restaurant extends BaseTimeEntity {
     @Column(nullable = false)
     private String totalAddress; // 주소
 
-    @Column(nullable = false, length = 5000)
+    @Column(length = 5000)
     private String description; // 매장 설명
 
     @Column
