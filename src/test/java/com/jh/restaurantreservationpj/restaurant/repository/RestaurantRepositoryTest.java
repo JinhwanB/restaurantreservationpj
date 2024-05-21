@@ -56,8 +56,16 @@ class RestaurantRepositoryTest {
     }
 
     @Test
+    @DisplayName("매장명으로 매장 존재 여부 확인")
+    void existByName(){
+        assertThat(restaurantRepository.existsByName("매장 이름")).isEqualTo(true);
+    }
+
+    @Test
     @DisplayName("매장명으로 매장 찾기")
     void findByName(){
-        assertThat(restaurantRepository.existsByName("매장 이름")).isEqualTo(true);
+        Restaurant restaurant = restaurantRepository.findByName("매장 이름").orElse(null);
+
+        assertThat(restaurant).isNotNull();
     }
 }
