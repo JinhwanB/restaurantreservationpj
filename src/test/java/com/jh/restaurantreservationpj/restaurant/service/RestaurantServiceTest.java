@@ -4,7 +4,9 @@ import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.domain.Role;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
+import com.jh.restaurantreservationpj.restaurant.dto.CheckRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
+import com.jh.restaurantreservationpj.restaurant.dto.ModifiedRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +31,8 @@ class RestaurantServiceTest {
     @Autowired
     private RestaurantService restaurantService;
 
-    CreateRestaurantDto.Request request;
+    CreateRestaurantDto.Request createRequest;
+    ModifiedRestaurantDto.Request modifyRequest;
 
     @BeforeEach
     void before(){
@@ -48,10 +51,19 @@ class RestaurantServiceTest {
 
         memberRepository.save(member);
 
-        request = CreateRestaurantDto.Request.builder()
+        createRequest = CreateRestaurantDto.Request.builder()
                 .userId("test")
                 .name("매장 이름")
                 .description("설명")
+                .openTime("08")
+                .closeTime("22")
+                .totalAddress("주소")
+                .build();
+
+        modifyRequest = ModifiedRestaurantDto.Request.builder()
+                .userId("test")
+                .name("매장 이름")
+                .description("설명2")
                 .openTime("08")
                 .closeTime("22")
                 .totalAddress("주소")
@@ -61,7 +73,7 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 등록 서비스")
     void create(){
-        CreateRestaurantDto.Response response = restaurantService.createRestaurant(request);
+        CreateRestaurantDto.Response response = restaurantService.createRestaurant(createRequest);
 
         assertThat(response.getName()).isEqualTo("매장 이름");
     }
@@ -70,10 +82,41 @@ class RestaurantServiceTest {
     @DisplayName("매장 등록 서비스 실패 - 중복된 매장명")
     void failCreate(){
         try{
-            restaurantService.createRestaurant(request);
-            restaurantService.createRestaurant(request);
+            restaurantService.createRestaurant(createRequest);
+            restaurantService.createRestaurant(createRequest);
         }catch (RestaurantException e){
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.ALREADY_EXIST_NAME.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("매장 수정 서비스")
+    void modify(){
+        restaurantService.createRestaurant(createRequest);
+        CheckRestaurantDto.Response response = restaurantService.modifyRestaurant("매장 이름", modifyRequest);
+
+        assertThat(response.getDescription()).isEqualTo("설명2");
+    }
+
+    @Test
+    @DisplayName("매장 수정 서비스 실패 - 없는 매장")
+    void failModify1(){
+        restaurantService.createRestaurant(createRequest);
+        try{
+            restaurantService.modifyRestaurant("매장", modifyRequest);
+        }catch (RestaurantException e){
+            assertThat(e.getRestaurantErrorCode().getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("매장 수정 서비스 실패 - 매장 관리자와 아이디 다름")
+    void failModify2(){
+        restaurantService.createRestaurant(createRequest);
+        try{
+            restaurantService.modifyRestaurant("매장 이름", modifyRequest.toBuilder().userId("te").build());
+        }catch (RestaurantException e){
+            assertThat(e.getRestaurantErrorCode().getMessage()).isEqualTo(RestaurantErrorCode.DIFF_MANAGER.getMessage());
         }
     }
 }
