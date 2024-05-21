@@ -4,6 +4,7 @@ import com.jh.restaurantreservationpj.validation.NotNullPattern;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+// 매장 등록 시 dto
 public class CreateRestaurantDto {
 
     @Getter
