@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@SQLDelete(sql = "UPDATE restaurant SET del_date = now() WHERE id=?")
+@SQLDelete(sql = "UPDATE reservation SET del_date = now() WHERE id=?")
 @SQLRestriction("del_date IS NULL")
 public class Reservation extends BaseTimeEntity {
 
@@ -38,11 +38,11 @@ public class Reservation extends BaseTimeEntity {
     @Column(nullable = false)
     private String reservationTime; // 희망 예약 시간
 
-    @Column(nullable = false)
+    @Column
     @Enumerated(EnumType.STRING)
     private ReservationState reservationState; // 점장 예약 승인 여부
 
-    @Column(nullable = false)
+    @Column
     @Enumerated(EnumType.STRING)
     private ReservationVisit reservationVisit; // 방문 확인 여부
 
