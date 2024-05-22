@@ -105,4 +105,12 @@ public class RestaurantService {
 
         return new PageImpl<>(responseList, pageable, responseList.size());
     }
+
+    // 매장 상세 조회 서비스
+    @Transactional(readOnly = true)
+    public CheckRestaurantDto.Response checkRestaurant(String name) {
+        Restaurant restaurant = restaurantRepository.findByName(name).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
+
+        return restaurant.toCheckResponse();
+    }
 }
