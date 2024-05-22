@@ -2,7 +2,7 @@ package com.jh.restaurantreservationpj.reservation.dto;
 
 import lombok.*;
 
-public class CheckReservationDto {
+public class CheckForManagerReservationDto {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
