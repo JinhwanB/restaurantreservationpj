@@ -11,6 +11,8 @@ import com.jh.restaurantreservationpj.restaurant.service.RestaurantService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +58,14 @@ public class RestaurantController {
         String deletedRestaurant = restaurantService.deleteRestaurant(request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(deletedRestaurant));
+    }
+
+    // 매장 검색 컨트롤러
+    @GetMapping("/search")
+    public ResponseEntity<GlobalResponse<Page<CheckRestaurantDto.Response>>> search(@RequestParam @NotBlank(message = "검색어를 입력해주세요.") String word, Pageable pageable) {
+        Page<CheckRestaurantDto.Response> searched = restaurantService.searchRestaurantName(word, pageable);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(searched));
     }
 
     // 오픈시간과 마감시간 유효성 검증
