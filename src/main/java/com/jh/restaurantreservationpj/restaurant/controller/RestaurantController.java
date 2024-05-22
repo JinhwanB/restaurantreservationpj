@@ -70,6 +70,14 @@ public class RestaurantController {
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(searched));
     }
 
+    // 매장 상세 조회 컨트롤러
+    @GetMapping("/restaurant/{restaurantName}")
+    public ResponseEntity<GlobalResponse<CheckRestaurantDto.Response>> check(@PathVariable @NotBlank(message = "매장 이름을 입력해주세요.") String restaurantName) {
+        CheckRestaurantDto.Response response = restaurantService.checkRestaurant(restaurantName);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
     // 오픈시간과 마감시간 유효성 검증
     private static void validOfOpenTimeAndCloseTime(String openTime, String closeTime) {
         // 오픈 시간과 마감 시간은 모두 null(24시간 운영) 이거나 모두 유효한 값이 있어야 함
