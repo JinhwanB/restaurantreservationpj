@@ -95,7 +95,7 @@ public class RestaurantService {
     // 매장 검색 서비스
     // 검색한 문자로 시작하거나 문자를 포함한 매장을 오름차순으로 정렬하여 가져옴
     // 페이징 처리하여 가져온다.
-    public Page<CheckRestaurantDto.Response> autoCompleteRestaurantName(String prefix, Pageable pageable) {
+    public Page<CheckRestaurantDto.Response> searchRestaurantName(String prefix, Pageable pageable) {
         Page<Restaurant> restaurantList = restaurantRepository.findAllByNameStartingWithIgnoreCaseOrNameContainingIgnoreCaseOrderByNameAsc(prefix, prefix, pageable);
         List<Restaurant> content = restaurantList.getContent();
         List<CheckRestaurantDto.Response> responseList = content.stream()
