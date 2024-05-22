@@ -2,7 +2,7 @@ package com.jh.restaurantreservationpj.reservation.domain;
 
 import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
-import com.jh.restaurantreservationpj.reservation.dto.CheckReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.CheckForManagerReservationDto;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
@@ -50,9 +50,9 @@ public class Reservation extends BaseTimeEntity {
     @Column
     private LocalDateTime delDate; // 삭제 날짜
 
-    // Entity -> CheckResponse
-    public CheckReservationDto.Response toCheckResponse() {
-        return CheckReservationDto.Response.builder()
+    // Entity -> CheckResponse (점장용)
+    public CheckForManagerReservationDto.Response toCheckForManagerResponse() {
+        return CheckForManagerReservationDto.Response.builder()
                 .reservationNumber(reservationNumber)
                 .memberId(reservationMember.getUserId())
                 .restaurantName(reservationRestaurant.getName())
