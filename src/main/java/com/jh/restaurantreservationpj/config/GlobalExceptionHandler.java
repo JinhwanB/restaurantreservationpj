@@ -2,6 +2,8 @@ package com.jh.restaurantreservationpj.config;
 
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @RestControllerAdvice
 @Slf4j
@@ -36,7 +39,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(GlobalResponse.toGlobalResponseFail(405, "해당 url을 지원하지 않습니다. Http Method(GET, PUT, POST, DELETE)가 정확한지 확인해주세요."), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
-    // 유효성 검증 에러 핸들러 -> 400 에러
+    // 유효성 검증 에러 핸들러(requestBody) -> 400 에러
     @ExceptionHandler(MethodArgumentNotValidException.class)
     private ResponseEntity<List<GlobalResponse<?>>> handleValidException(MethodArgumentNotValidException e){
         log.error("request 유효성 검사 실패");
@@ -46,6 +49,21 @@ public class GlobalExceptionHandler {
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
         for (FieldError fieldError : fieldErrors) {
             GlobalResponse<?> response = GlobalResponse.toGlobalResponseFail(400, fieldError.getDefaultMessage());
+            list.add(response);
+        }
+
+        return ResponseEntity.badRequest().body(list);
+    }
+
+    // 유효성 검증 에러 핸들러(pathVariable, requestParam) -> 400 에러
+    @ExceptionHandler(ConstraintViolationException.class)
+    private ResponseEntity<List<GlobalResponse<?>>> handleValidException2(ConstraintViolationException e){
+        log.error("pathVariable 또는 requestParam 유효성 검사 실패");
+
+        List<GlobalResponse<?>> list = new ArrayList<>();
+        Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
+        for (ConstraintViolation<?> constraintViolation : constraintViolations) {
+            GlobalResponse<Object> response = GlobalResponse.toGlobalResponseFail(400, constraintViolation.getMessage());
             list.add(response);
         }
 
