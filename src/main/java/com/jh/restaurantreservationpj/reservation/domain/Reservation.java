@@ -1,17 +1,24 @@
 package com.jh.restaurantreservationpj.reservation.domain;
 
+import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.reservation.dto.CheckReservationDto;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class Reservation {
+@SQLDelete(sql = "UPDATE restaurant SET del_date = now() WHERE id=?")
+@SQLRestriction("del_date IS NULL")
+public class Reservation extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +45,9 @@ public class Reservation {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ReservationVisit reservationVisit; // 방문 확인 여부
+
+    @Column
+    private LocalDateTime delDate; // 삭제 날짜
 
     // Entity -> CheckResponse
     public CheckReservationDto.Response toCheckResponse() {
