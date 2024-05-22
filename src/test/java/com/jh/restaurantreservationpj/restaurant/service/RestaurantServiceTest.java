@@ -193,4 +193,24 @@ class RestaurantServiceTest {
         assertThat(content.get(0).getName()).isEqualTo("매가");
         assertThat(content.get(1).getName()).isEqualTo("매장 이름");
     }
+
+    @Test
+    @DisplayName("매장 상세 조회 서비스")
+    void check() {
+        restaurantService.createRestaurant(createRequest);
+
+        CheckRestaurantDto.Response response = restaurantService.checkRestaurant("매장 이름");
+
+        assertThat(response.getName()).isEqualTo("매장 이름");
+    }
+
+    @Test
+    @DisplayName("매장 상세 조회 서비스 실패 - 없는 매장")
+    void failCheck() {
+        try {
+            restaurantService.checkRestaurant("매장 이름");
+        } catch (RestaurantException e) {
+            assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
+        }
+    }
 }
