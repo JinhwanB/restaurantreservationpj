@@ -6,6 +6,7 @@ import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.domain.Role;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
+import com.jh.restaurantreservationpj.restaurant.dto.DeleteRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.ModifiedRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.service.RestaurantService;
@@ -17,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ class RestaurantControllerTest {
 
     CreateRestaurantDto.Request createRequest;
     ModifiedRestaurantDto.Request modifyRequest;
+    DeleteRestaurantDto.Request deleteRequest;
 
     @BeforeEach
     void before() {
@@ -80,6 +83,11 @@ class RestaurantControllerTest {
                 .openTime("08")
                 .closeTime("22")
                 .totalAddress("주소")
+                .build();
+
+        deleteRequest = DeleteRestaurantDto.Request.builder()
+                .userId("test")
+                .name("매장 이름")
                 .build();
     }
 
@@ -194,5 +202,35 @@ class RestaurantControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value(RestaurantErrorCode.NOT_VALID_ARGS_OF_OPEN_TIME_AND_CLOSE_TIME.getMessage()));
+    }
+
+    @Test
+    @DisplayName("매장 삭제 컨트롤러")
+    void delete() throws Exception {
+        restaurantService.createRestaurant(createRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/restaurant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("성공"))
+                .andExpect(jsonPath("$.data").exists());
+    }
+
+    @Test
+    @DisplayName("매장 삭제 컨트롤러 실패 - 유효성 검증 실패")
+    void failDelete() throws Exception {
+        restaurantService.createRestaurant(createRequest);
+
+        DeleteRestaurantDto.Request badRequest = deleteRequest.toBuilder()
+                .name(null)
+                .build();
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/restaurant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(badRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].status").value(400));
     }
 }
