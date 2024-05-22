@@ -24,8 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -230,6 +229,31 @@ class RestaurantControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/restaurant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(badRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].status").value(400));
+    }
+
+    @Test
+    @DisplayName("매장 검색 컨트롤러")
+    void search() throws Exception {
+        restaurantService.createRestaurant(createRequest);
+
+        CreateRestaurantDto.Request secondRequest = createRequest.toBuilder()
+                .name("매가")
+                .build();
+        restaurantService.createRestaurant(secondRequest);
+
+        mockMvc.perform(get("/restaurants/search?word=매"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("성공"))
+                .andExpect(jsonPath("$.data.content[0].name").value("매가"));
+    }
+
+    @Test
+    @DisplayName("매장 검색 컨트롤러 실패 - 검색어 입력 안함")
+    void failSearch() throws Exception {
+        mockMvc.perform(get("/restaurants/search?word= "))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[0].status").value(400));
     }
