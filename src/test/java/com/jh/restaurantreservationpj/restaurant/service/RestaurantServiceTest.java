@@ -16,6 +16,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -39,6 +43,7 @@ class RestaurantServiceTest {
     CreateRestaurantDto.Request createRequest;
     ModifiedRestaurantDto.Request modifyRequest;
     DeleteRestaurantDto.Request deleteRequest;
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "name"));
 
     @BeforeEach
     void before() {
@@ -169,5 +174,23 @@ class RestaurantServiceTest {
         } catch (RestaurantException e) {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.DIFF_MANAGER.getMessage());
         }
+    }
+
+    @Test
+    @DisplayName("매장 검색 서비스")
+    void search() {
+        restaurantService.createRestaurant(createRequest);
+
+        CreateRestaurantDto.Request secondCreateRequest = createRequest.toBuilder()
+                .name("매가")
+                .build();
+        restaurantService.createRestaurant(secondCreateRequest);
+
+        Page<CheckRestaurantDto.Response> searched = restaurantService.searchRestaurantName("매", pageable);
+        List<CheckRestaurantDto.Response> content = searched.getContent();
+
+        assertThat(content).hasSize(2);
+        assertThat(content.get(0).getName()).isEqualTo("매가");
+        assertThat(content.get(1).getName()).isEqualTo("매장 이름");
     }
 }
