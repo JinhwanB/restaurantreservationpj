@@ -13,8 +13,13 @@ import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -85,5 +90,18 @@ public class RestaurantService {
         restaurantRepository.delete(restaurant);
 
         return restaurant.getName();
+    }
+
+    // 매장 검색 서비스
+    // 검색한 문자로 시작하거나 문자를 포함한 매장을 오름차순으로 정렬하여 가져옴
+    // 페이징 처리하여 가져온다.
+    public Page<CheckRestaurantDto.Response> autoCompleteRestaurantName(String prefix, Pageable pageable) {
+        Page<Restaurant> restaurantList = restaurantRepository.findAllByNameStartingWithIgnoreCaseOrNameContainingIgnoreCaseOrderByNameAsc(prefix, prefix);
+        List<Restaurant> content = restaurantList.getContent();
+        List<CheckRestaurantDto.Response> responseList = content.stream()
+                .map(Restaurant::toCheckResponse)
+                .toList();
+
+        return new PageImpl<>(responseList, pageable, responseList.size());
     }
 }
