@@ -7,7 +7,6 @@ import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +16,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @SQLDelete(sql = "UPDATE reservation SET del_date = now() WHERE id=?")
-@SQLRestriction("del_date IS NULL")
 public class Reservation extends BaseTimeEntity {
 
     @Id
@@ -41,6 +39,9 @@ public class Reservation extends BaseTimeEntity {
     @Column
     @Enumerated(EnumType.STRING)
     private ReservationState reservationState; // 점장 예약 승인 여부
+
+    @Column
+    private String deniedMessage; // 예약 거절 이유
 
     @Column
     @Enumerated(EnumType.STRING)
