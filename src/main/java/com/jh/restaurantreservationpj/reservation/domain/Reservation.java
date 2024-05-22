@@ -1,6 +1,7 @@
 package com.jh.restaurantreservationpj.reservation.domain;
 
 import com.jh.restaurantreservationpj.member.domain.Member;
+import com.jh.restaurantreservationpj.reservation.dto.CheckReservationDto;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,7 +22,7 @@ public class Reservation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_number", nullable = false)
-    private Member reservationId; // 예약한 회원의 아이디
+    private Member reservationMember; // 예약한 회원
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
@@ -37,4 +38,14 @@ public class Reservation {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ReservationVisit reservationVisit; // 방문 확인 여부
+
+    // Entity -> CheckResponse
+    public CheckReservationDto.Response toCheckResponse() {
+        return CheckReservationDto.Response.builder()
+                .reservationNumber(reservationNumber)
+                .memberId(reservationMember.getUserId())
+                .restaurantName(reservationRestaurant.getName())
+                .reservationTime(reservationTime)
+                .build();
+    }
 }
