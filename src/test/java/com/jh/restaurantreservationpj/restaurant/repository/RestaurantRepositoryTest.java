@@ -31,7 +31,7 @@ class RestaurantRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
 
-    Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "name"));
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"));
 
     @BeforeEach
     void before() {
