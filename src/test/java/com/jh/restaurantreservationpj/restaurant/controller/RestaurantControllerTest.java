@@ -257,4 +257,24 @@ class RestaurantControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[0].status").value(400));
     }
+
+    @Test
+    @DisplayName("매장 상세 조회 컨트롤러")
+    void check() throws Exception {
+        restaurantService.createRestaurant(createRequest);
+
+        mockMvc.perform(get("/restaurants/restaurant/매장 이름"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("성공"))
+                .andExpect(jsonPath("$.data").exists());
+    }
+
+    @Test
+    @DisplayName("매장 상세 조회 컨트롤러 실패 - 유효성 검증 실패")
+    void failCheck() throws Exception {
+        mockMvc.perform(get("/restaurants/restaurant/ "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].status").value(400));
+    }
 }
