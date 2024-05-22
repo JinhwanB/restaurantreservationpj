@@ -7,6 +7,7 @@ import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import com.jh.restaurantreservationpj.restaurant.dto.CheckRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
+import com.jh.restaurantreservationpj.restaurant.dto.DeleteRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.ModifiedRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
@@ -26,15 +27,15 @@ public class RestaurantService {
     /**
      * 매장 등록 서비스
      */
-    public CreateRestaurantDto.Response createRestaurant(CreateRestaurantDto.Request request){
+    public CreateRestaurantDto.Response createRestaurant(CreateRestaurantDto.Request request) {
         String userId = request.getUserId().trim();
         Member manager = memberRepository.findByUserId(userId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         String name = request.getName().trim();
-        if(restaurantRepository.existsByName(name)){ // 중복 매장 확인
+        if (restaurantRepository.existsByName(name)) { // 중복 매장 확인
             throw new RestaurantException(RestaurantErrorCode.ALREADY_EXIST_NAME);
         }
-        
+
         Restaurant restaurant = Restaurant.builder()
                 .manager(manager)
                 .name(name)
@@ -48,12 +49,12 @@ public class RestaurantService {
     }
 
     // 매장 수정 서비스
-    public CheckRestaurantDto.Response modifyRestaurant(String restaurantName, ModifiedRestaurantDto.Request request){
+    public CheckRestaurantDto.Response modifyRestaurant(String restaurantName, ModifiedRestaurantDto.Request request) {
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
         String userId = request.getUserId().trim();
         String manager = restaurant.getManager().getUserId();
-        if(!userId.equals(manager)){ // 매장을 관리하는 아이디와 일치하는지 확인
+        if (!userId.equals(manager)) { // 매장을 관리하는 아이디와 일치하는지 확인
             throw new RestaurantException(RestaurantErrorCode.DIFF_MANAGER);
         }
 
@@ -67,5 +68,22 @@ public class RestaurantService {
                 .build();
         Restaurant save = restaurantRepository.save(modified);
         return save.toCheckResponse();
+    }
+
+    // 매장 삭제 서비스
+    public String deleteRestaurant(DeleteRestaurantDto.Request request) {
+        String restaurantName = request.getName().trim();
+        String userId = request.getUserId().trim();
+
+        Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
+
+        String manager = restaurant.getManager().getUserId();
+        if (!userId.equals(manager)) { // 매장을 관리하는 아이디와 일치하는지 확인
+            throw new RestaurantException(RestaurantErrorCode.DIFF_MANAGER);
+        }
+
+        restaurantRepository.delete(restaurant);
+
+        return restaurant.getName();
     }
 }
