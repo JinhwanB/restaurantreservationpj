@@ -10,6 +10,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -27,8 +31,10 @@ class RestaurantRepositoryTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "name"));
+
     @BeforeEach
-    void before(){
+    void before() {
         MemberRole memberRole = MemberRole.builder()
                 .role(Role.ROLE_ADMIN)
                 .build();
@@ -53,19 +59,40 @@ class RestaurantRepositoryTest {
                 .manager(save)
                 .build();
         restaurantRepository.save(restaurant);
+
+        Restaurant restaurant2 = Restaurant.builder()
+                .name("매가")
+                .closeTime("21")
+                .openTime("09")
+                .description("설명2")
+                .totalAddress("주소2")
+                .manager(save)
+                .build();
+        restaurantRepository.save(restaurant2);
     }
 
     @Test
     @DisplayName("매장명으로 매장 존재 여부 확인")
-    void existByName(){
+    void existByName() {
         assertThat(restaurantRepository.existsByName("매장 이름")).isEqualTo(true);
     }
 
     @Test
     @DisplayName("매장명으로 매장 찾기")
-    void findByName(){
+    void findByName() {
         Restaurant restaurant = restaurantRepository.findByName("매장 이름").orElse(null);
 
         assertThat(restaurant).isNotNull();
+    }
+
+    @Test
+    @DisplayName("매장 검색 쿼리 메소드")
+    void search() {
+        Page<Restaurant> restaurantList = restaurantRepository.findAllByNameStartingWithIgnoreCaseOrNameContainingIgnoreCaseOrderByNameAsc("매", "매", pageable);
+        List<Restaurant> content = restaurantList.getContent();
+
+        assertThat(content).hasSize(2);
+        assertThat(content.get(0).getName()).isEqualTo("매가");
+        assertThat(content.get(1).getName()).isEqualTo("매장 이름");
     }
 }
