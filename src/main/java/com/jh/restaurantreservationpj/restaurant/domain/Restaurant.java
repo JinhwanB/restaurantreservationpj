@@ -47,14 +47,14 @@ public class Restaurant extends BaseTimeEntity {
     private LocalDateTime delDate; // 삭제 날짜
 
     // Entity -> CreateResponse
-    public CreateRestaurantDto.Response toCreateResponse(){
+    public CreateRestaurantDto.Response toCreateResponse() {
         return CreateRestaurantDto.Response.builder()
                 .name(name)
                 .build();
     }
 
     // Entity -> CheckResponse
-    public CheckRestaurantDto.Response toCheckResponse(){
+    public CheckRestaurantDto.Response toCheckResponse() {
         return CheckRestaurantDto.Response.builder()
                 .name(name)
                 .description(description)
