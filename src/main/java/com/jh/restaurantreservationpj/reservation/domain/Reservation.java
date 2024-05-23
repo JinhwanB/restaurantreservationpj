@@ -37,16 +37,14 @@ public class Reservation extends BaseTimeEntity {
     @Column(nullable = false)
     private String reservationTime; // 희망 예약 시간
 
-    @Column
-    @Enumerated(EnumType.STRING)
-    private ReservationState reservationState; // 점장 예약 승인 여부
+    @Column(nullable = false)
+    private boolean isAccept; // 점장 예약 승인 여부
 
     @Column
     private String deniedMessage; // 예약 거절 이유
 
-    @Column
-    @Enumerated(EnumType.STRING)
-    private ReservationVisit reservationVisit; // 방문 확인 여부
+    @Column(nullable = false)
+    private boolean isVisit; // 방문 확인 여부
 
     @Column(nullable = false)
     private boolean isCancel; // 회원이 예약을 취소했는지 여부
