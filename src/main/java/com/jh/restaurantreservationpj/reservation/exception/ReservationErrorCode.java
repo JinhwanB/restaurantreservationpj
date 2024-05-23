@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ReservationErrorCode {
+    ALREADY_EXIST_RESERVATION(400, "이미 대기중인 예약이 있습니다. 다른 시간으로 예약하시려면 기존 예약 취소 후 이용해주세요."),
     ALREADY_USED_RESERVATION(400, "이미 완료(매장 방문)된 예약입니다."),
     ALREADY_CANCELED_RESERVATION(400, "이미 취소된 예약입니다."),
     ALREADY_DENIED_RESERVATION(400, "이미 예약 거절되었습니다."),
