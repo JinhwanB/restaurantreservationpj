@@ -1,5 +1,6 @@
 package com.jh.restaurantreservationpj.reservation.repository;
 
+import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.reservation.domain.Reservation;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import org.springframework.data.domain.Page;
@@ -17,4 +18,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     Page<Reservation> findAllByReservationRestaurantAndDelDate(Restaurant restaurant, LocalDateTime delDate, Pageable pageable); // 매장에 해당하는 예약 리스트 중 삭제되지 않은 리스트를 페이징처리하여 가져오기
 
     boolean existsByReservationNumberAndDelDate(String reservationNumber, LocalDateTime delDate); // 삭제되지 않은 예약 중 예약 번호의 중복 여부
+
+    boolean existsByReservationMemberAndReservationRestaurantAndDelDate(Member reservationMember, Restaurant reservationRestaurant, LocalDateTime delDate); // 이미 진행 중인 예약이 있는지 확인하는 쿼리 메소드
 }
