@@ -10,6 +10,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +30,8 @@ class ReservationRepositoryTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "regDate"));
 
     @BeforeEach
     void before() {
@@ -66,5 +72,30 @@ class ReservationRepositoryTest {
         Reservation reservation = reservationRepository.findByReservationNumber("12341234").orElse(null);
 
         assertThat(reservation.getReservationMember().getUserId()).isEqualTo("test");
+    }
+
+    @Test
+    @DisplayName("매장에 해당하는 예약 리스트 중 삭제되지 않은 리스트를 페이징처리하여 가져오기")
+    void reservationList() {
+        Member secondMember = Member.builder()
+                .userId("test2")
+                .userPWD("3333")
+                .build();
+        Member second = memberRepository.save(secondMember);
+
+        Restaurant restaurant1 = restaurantRepository.findByName("매장").orElse(null);
+
+        Reservation reservation2 = Reservation.builder()
+                .reservationNumber("12341235")
+                .reservationMember(second)
+                .reservationRestaurant(restaurant1)
+                .reservationTime("15")
+                .build();
+        reservationRepository.save(reservation2);
+
+        Page<Reservation> reservationList = reservationRepository.findAllByReservationRestaurantAndDelDate(restaurant1, null, pageable);
+
+        assertThat(reservationList.getContent().get(0).getReservationNumber()).isEqualTo("12341234");
+        assertThat(reservationList.getContent().get(1).getReservationNumber()).isEqualTo("12341235");
     }
 }
