@@ -98,4 +98,10 @@ class ReservationRepositoryTest {
         assertThat(reservationList.getContent().get(0).getReservationNumber()).isEqualTo("12341234");
         assertThat(reservationList.getContent().get(1).getReservationNumber()).isEqualTo("12341235");
     }
+
+    @Test
+    @DisplayName("삭제되지 않은 예약 중 예약 번호 존재하는지 확인")
+    void existReservationNumber() {
+        assertThat(reservationRepository.existsByReservationNumberAndDelDate("12341234", null)).isEqualTo(true);
+    }
 }
