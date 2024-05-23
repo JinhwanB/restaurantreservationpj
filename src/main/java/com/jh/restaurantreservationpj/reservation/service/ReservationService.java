@@ -37,13 +37,19 @@ public class ReservationService {
 
     // 회원이 예약 생성하는 서비스
     public CreateReservationDto.Response createReservation(String memberId, CreateReservationDto.Request request) {
-        String reservationNumber = makeReservationNumber(String.valueOf(reservationNum));
-
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         String restaurantName = request.getRestaurantName().trim();
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
+
+        // 이미 같은 매장에 진행 중인 예약이 있는 경우
+        if (reservationRepository.existsByReservationMemberAndReservationRestaurantAndDelDate(member, restaurant, null)) {
+            throw new ReservationException(ReservationErrorCode.ALREADY_EXIST_RESERVATION);
+        }
+
         validReservationTime(restaurant, request.getTime().trim()); // 예약 시간이 가능한 시간인지 확인
+
+        String reservationNumber = makeReservationNumber(String.valueOf(reservationNum)); // 예약 번호
 
         Reservation reservation = Reservation.builder()
                 .reservationNumber(reservationNumber)
@@ -51,6 +57,8 @@ public class ReservationService {
                 .reservationRestaurant(restaurant)
                 .reservationTime(request.getTime().trim())
                 .isCancel(false)
+                .isAccept(false)
+                .isVisit(false)
                 .build();
         Reservation save = reservationRepository.save(reservation);
 
@@ -70,6 +78,36 @@ public class ReservationService {
         if (member != reservationMember) { // 예약 정보의 회원과 다른 경우
             throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MEMBER);
         }
+
+        if (reservation.getDelDate() != null) {
+            if (!reservation.isAccept()) { // 예약 거절된 예약인 경우
+                throw new ReservationException(ReservationErrorCode.ALREADY_DENIED_RESERVATION);
+            }
+
+            if (reservation.isCancel()) { // 이미 취소한 예약인 경우
+                throw new ReservationException(ReservationErrorCode.ALREADY_CANCELED_RESERVATION);
+            }
+
+            if (reservation.isVisit()) { // 이미 방문 완료한 예약인 경우
+                throw new ReservationException(ReservationErrorCode.ALREADY_USED_RESERVATION);
+            }
+        }
+
+        // 현재 예약 한 시간 전을 넘겼는지 확인
+        LocalDateTime now = LocalDateTime.now(); // 현재 시간
+        LocalDateTime reservationTime = stringToLocalDateTime(reservation.getReservationTime()); // 예약 시간
+        LocalDateTime beforeOneHour = reservationTime.minusHours(1); // 예약 1시간 전
+        if (now.isAfter(beforeOneHour)) {
+            throw new ReservationException(ReservationErrorCode.IMPOSSIBLE_CANCEL);
+        }
+
+        Reservation canceledReservation = reservation.toBuilder()
+                .isCancel(true)
+                .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
+                .build();
+        reservationRepository.save(canceledReservation);
+
+        return canceledReservation.getReservationNumber();
     }
 
     // 점장이 매장 예약 목록을 확인하는 서비스
