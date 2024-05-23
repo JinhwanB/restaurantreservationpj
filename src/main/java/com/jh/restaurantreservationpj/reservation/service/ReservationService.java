@@ -41,15 +41,15 @@ public class ReservationService {
 
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
-        String restaurantName = request.getRestaurantName();
+        String restaurantName = request.getRestaurantName().trim();
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
-        validReservationTime(restaurant, request.getTime()); // 예약 시간이 가능한 시간인지 확인
+        validReservationTime(restaurant, request.getTime().trim()); // 예약 시간이 가능한 시간인지 확인
 
         Reservation reservation = Reservation.builder()
                 .reservationNumber(reservationNumber)
                 .reservationMember(member)
                 .reservationRestaurant(restaurant)
-                .reservationTime(request.getTime())
+                .reservationTime(request.getTime().trim())
                 .build();
         Reservation save = reservationRepository.save(reservation);
 
@@ -101,8 +101,8 @@ public class ReservationService {
         int timeOfReservation = Integer.parseInt(reservationTime);
         LocalDateTime hopeTime = LocalDateTime.of(year, month, day, timeOfReservation, 0); // 희망 예약 시간
 
-        // 예약하고자 하는 시간이 매장 오픈시간보다 이전인지 또는 매장 마감시간 이후인지 확인
-        if (hopeTime.isBefore(restaurantOpenTime) || hopeTime.isAfter(restaurantCloseTime)) {
+        // 예약하고자 하는 시간이 현재 시간보다 이전이거나 매장 오픈시간보다 이전인지 또는 매장 마감시간 이후인지 확인
+        if (hopeTime.isBefore(now) || hopeTime.isBefore(restaurantOpenTime) || hopeTime.isAfter(restaurantCloseTime)) {
             throw new ReservationException(ReservationErrorCode.IMPOSSIBLE_RESERVATION);
         }
     }
