@@ -62,6 +62,9 @@ class ReservationRepositoryTest {
                 .reservationMember(member)
                 .reservationRestaurant(restaurant)
                 .reservationTime("13")
+                .isAccept(false)
+                .isVisit(false)
+                .isCancel(false)
                 .build();
         reservationRepository.save(reservation);
     }
@@ -103,5 +106,14 @@ class ReservationRepositoryTest {
     @DisplayName("삭제되지 않은 예약 중 예약 번호 존재하는지 확인")
     void existReservationNumber() {
         assertThat(reservationRepository.existsByReservationNumberAndDelDate("12341234", null)).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("이미 진행중인 예약이 있는지 확인")
+    void alreadyExist() {
+        Member member = memberRepository.findByUserId("test").orElse(null);
+        Restaurant restaurant = restaurantRepository.findByName("매장").orElse(null);
+
+        assertThat(reservationRepository.existsByReservationMemberAndReservationRestaurantAndDelDate(member, restaurant, null)).isEqualTo(true);
     }
 }
