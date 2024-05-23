@@ -48,6 +48,9 @@ public class Reservation extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private ReservationVisit reservationVisit; // 방문 확인 여부
 
+    @Column(nullable = false)
+    private boolean isCancel; // 회원이 예약을 취소했는지 여부
+
     @Column
     private LocalDateTime delDate; // 삭제 날짜
 
@@ -57,7 +60,7 @@ public class Reservation extends BaseTimeEntity {
                 .reservationNumber(reservationNumber)
                 .memberId(reservationMember.getUserId())
                 .restaurantName(reservationRestaurant.getName())
-                .reservationTime(reservationTime)
+                .reservationTime(reservationTime + "시")
                 .build();
     }
 
