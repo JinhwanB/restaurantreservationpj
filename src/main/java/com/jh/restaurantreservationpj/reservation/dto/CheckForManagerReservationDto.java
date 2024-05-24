@@ -2,6 +2,7 @@ package com.jh.restaurantreservationpj.reservation.dto;
 
 import lombok.*;
 
+// 예약 조회 관련 dto(점장용)
 public class CheckForManagerReservationDto {
 
     @Getter
