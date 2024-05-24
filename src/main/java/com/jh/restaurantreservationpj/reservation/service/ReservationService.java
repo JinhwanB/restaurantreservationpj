@@ -108,6 +108,27 @@ public class ReservationService {
     }
 
     // 예약 승인 서비스
+    public String acceptReservation(String managerId, String reservationNumber) {
+        Member manager = memberRepository.findByUserId(managerId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        Reservation reservation = reservationRepository.findByReservationNumberAndDelDate(reservationNumber, null).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+
+        if (reservation.getReservationRestaurant().getManager() != manager) { // 예약한 매장의 관리자가 아닌 경우
+            throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MANAGER);
+        }
+
+        if (validUsefulReservation(reservation)) { // 이미 예약한 회원이 방문하지 않아 취소된 경우
+            throw new ReservationException(ReservationErrorCode.AUTO_CANCEL);
+        }
+
+        Reservation acceptedReservation = reservation.toBuilder()
+                .isAccept(true)
+                .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
+                .build();
+        reservationRepository.save(acceptedReservation);
+
+        return acceptedReservation.getReservationNumber();
+    }
 
     // 예약 거절 서비스
     public String denyReservation(String managerId, DenyReservationDto.Request request) {
@@ -128,7 +149,7 @@ public class ReservationService {
         Reservation deniedReservation = reservation.toBuilder()
                 .isAccept(false)
                 .deniedMessage(deniedMessage)
-                .delDate(LocalDateTime.now())
+                .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
                 .build();
         reservationRepository.save(deniedReservation);
 
