@@ -68,7 +68,7 @@ public class Reservation extends BaseTimeEntity {
                 .reservationNumber(reservationNumber)
                 .reservationMemberId(reservationMember.getUserId())
                 .reservationRestaurantName(reservationRestaurant.getName())
-                .reservationTime(reservationTime)
+                .reservationTime(reservationTime + "시")
                 .build();
     }
 }
