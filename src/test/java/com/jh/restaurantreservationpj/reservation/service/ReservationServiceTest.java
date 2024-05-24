@@ -279,4 +279,15 @@ class ReservationServiceTest {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_MANAGER.getMessage());
         }
     }
+
+    @Test
+    @DisplayName("예약 승인 서비스")
+    void accept() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        String reservationNumber = reservation.getReservationNumber();
+
+        String acceptedReservationNumber = reservationService.acceptReservation("manager", reservationNumber);
+
+        assertThat(acceptedReservationNumber).isEqualTo(reservationNumber);
+    }
 }
