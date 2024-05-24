@@ -5,10 +5,7 @@ import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.reservation.domain.Reservation;
-import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.CheckForManagerReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.*;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationErrorCode;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationException;
 import com.jh.restaurantreservationpj.reservation.repository.ReservationRepository;
@@ -24,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -159,7 +157,7 @@ public class ReservationService {
     // 점장이 매장 예약 목록을 확인하는 서비스
     // 페이징처리
     @Transactional(readOnly = true)
-    public Page<CheckForManagerReservationDto.Response> checkReservation(String restaurantName, Pageable pageable) {
+    public Page<CheckForManagerReservationDto.Response> checkForManagerReservation(String restaurantName, Pageable pageable) {
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
         Page<Reservation> reservationList = reservationRepository.findAllByReservationRestaurantAndDelDate(restaurant, null, pageable);
@@ -169,6 +167,31 @@ public class ReservationService {
                 .toList();
 
         return new PageImpl<>(list, pageable, list.size());
+    }
+
+    /*
+    회원이 예약 목록을 조회하는 서비스
+    페이징 처리
+     */
+    public Page<CheckForMemberReservationDto> checkForMemberReservation(String memberId, Pageable pageable) {
+        Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        Page<Reservation> reservationList = reservationRepository.findAllByReservationMember(member, pageable);
+        List<CheckForMemberReservationDto.Response> newList = new ArrayList<>();
+        List<Reservation> content = reservationList.getContent();
+        for (Reservation reservation : content) {
+            if (reservation.getDelDate() == null) {
+                CheckForMemberReservationDto.Response response = CheckForMemberReservationDto.Response.builder()
+                        .reservationTime(reservation.getReservationTime() + "시")
+                        .reservationNumber(reservation.getReservationNumber())
+                        .detailMessage(CheckForMemberReservationDto.DetailMessage.WAIT.getMessage())
+                        .restaurantName(reservation.getReservationRestaurant().getName())
+                        .build();
+                
+                newList.add(response);
+                continue;
+            }
+        }
     }
 
     // 혹시 모를 예약번호 중복 확인
