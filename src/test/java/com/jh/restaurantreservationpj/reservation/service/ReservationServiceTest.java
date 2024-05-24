@@ -4,6 +4,8 @@ import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
+import com.jh.restaurantreservationpj.reservation.domain.Reservation;
+import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationErrorCode;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationException;
@@ -18,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,12 +63,12 @@ class ReservationServiceTest {
                 .description("설명")
                 .totalAddress("주소")
                 .manager(manager)
-                .closeTime("22")
+                .closeTime("03")
                 .build();
         restaurantRepository.save(restaurant);
 
         createRequest = CreateReservationDto.Request.builder()
-                .time("15")
+                .time("16")
                 .restaurantName("매장")
                 .build();
     }
@@ -113,6 +117,166 @@ class ReservationServiceTest {
             reservationService.createReservation("test", badRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.IMPOSSIBLE_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스")
+    void cancel() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+
+        String reservationNumber = reservation.getReservationNumber();
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("취소 이유")
+                .build();
+        String canceledReservationNumber = reservationService.cancelFromMemberReservation("test", cancelRequest);
+
+        assertThat(reservationNumber).isEqualTo(canceledReservationNumber);
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 없는 회원")
+    void failCancel1() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+
+        String reservationNumber = reservation.getReservationNumber();
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("취소 이유")
+                .build();
+        try {
+            reservationService.cancelFromMemberReservation("tt", cancelRequest);
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 없는 예약")
+    void failCancel2() {
+        reservationService.createReservation("test", createRequest);
+
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber("10000001")
+                .reason("취소 이유")
+                .build();
+        try {
+            reservationService.cancelFromMemberReservation("test", cancelRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 회원 정보와 다름")
+    void failCancel3() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+
+        Member newMember = Member.builder()
+                .userPWD("12345")
+                .userId("ttt")
+                .build();
+        memberRepository.save(newMember);
+
+        String reservationNumber = reservation.getReservationNumber();
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("취소 이유")
+                .build();
+        try {
+            reservationService.cancelFromMemberReservation("ttt", cancelRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 승인 거절된 예약")
+    void failCancel4() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        String reservationNumber = reservation.getReservationNumber();
+        Reservation originReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
+        Reservation deniedReservation = originReservation.toBuilder()
+                .isAccept(false)
+                .delDate(LocalDateTime.now())
+                .build();
+        reservationRepository.save(deniedReservation);
+
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("취소 이유")
+                .build();
+        try {
+            reservationService.cancelFromMemberReservation("test", cancelRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_DENIED_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 이미 취소한 예약")
+    void failCancel5() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        String reservationNumber = reservation.getReservationNumber();
+        Reservation originReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
+        Reservation deniedReservation = originReservation.toBuilder()
+                .isCancel(true)
+                .delDate(LocalDateTime.now())
+                .build();
+        reservationRepository.save(deniedReservation);
+
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("취소 이유")
+                .build();
+        try {
+            reservationService.cancelFromMemberReservation("test", cancelRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_CANCELED_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 이미 방문 완료한 예약")
+    void failCancel6() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        String reservationNumber = reservation.getReservationNumber();
+        Reservation originReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
+        Reservation deniedReservation = originReservation.toBuilder()
+                .isVisit(true)
+                .delDate(LocalDateTime.now())
+                .build();
+        reservationRepository.save(deniedReservation);
+
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("취소 이유")
+                .build();
+        try {
+            reservationService.cancelFromMemberReservation("test", cancelRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_USED_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 예약 취소 가능 시간을 넘긴 경우")
+    void failCancel7() {
+        CreateReservationDto.Request newCreateRequest = createRequest.toBuilder()
+                .time("15")
+                .build();
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", newCreateRequest);
+        String reservationNumber = reservation.getReservationNumber();
+        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("취소 이유")
+                .build();
+
+        try {
+            reservationService.cancelFromMemberReservation("test", cancelRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.IMPOSSIBLE_CANCEL.getMessage());
         }
     }
 }
