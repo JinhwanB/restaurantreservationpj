@@ -17,6 +17,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findByReservationNumberAndDelDate(String reservationNumber, LocalDateTime delDate); // 어떠한 경로로든 처리되지 않은 예약 찾기
 
+    Page<Reservation> findAllByReservationMember(Member member, Pageable pageable); // 회원의 예약 리스트 페이징 처리하여 조회
+
     Page<Reservation> findAllByReservationRestaurantAndDelDate(Restaurant restaurant, LocalDateTime delDate, Pageable pageable); // 매장에 해당하는 예약 리스트 중 삭제되지 않은 리스트를 페이징처리하여 가져오기
 
     boolean existsByReservationNumberAndDelDate(String reservationNumber, LocalDateTime delDate); // 삭제되지 않은 예약 중 예약 번호의 중복 여부
