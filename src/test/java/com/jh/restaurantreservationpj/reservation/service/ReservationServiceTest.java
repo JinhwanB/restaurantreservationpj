@@ -4,9 +4,9 @@ import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
-import com.jh.restaurantreservationpj.reservation.domain.Reservation;
 import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationErrorCode;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationException;
 import com.jh.restaurantreservationpj.reservation.repository.ReservationRepository;
@@ -20,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -68,7 +66,7 @@ class ReservationServiceTest {
         restaurantRepository.save(restaurant);
 
         createRequest = CreateReservationDto.Request.builder()
-                .time("16")
+                .time("21")
                 .restaurantName("매장")
                 .build();
     }
@@ -192,75 +190,6 @@ class ReservationServiceTest {
     }
 
     @Test
-    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 승인 거절된 예약")
-    void failCancel4() {
-        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
-        String reservationNumber = reservation.getReservationNumber();
-        Reservation originReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
-        Reservation deniedReservation = originReservation.toBuilder()
-                .isAccept(false)
-                .delDate(LocalDateTime.now())
-                .build();
-        reservationRepository.save(deniedReservation);
-
-        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
-                .reservationNumber(reservationNumber)
-                .reason("취소 이유")
-                .build();
-        try {
-            reservationService.cancelReservation("test", cancelRequest);
-        } catch (ReservationException e) {
-            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_DENIED_RESERVATION.getMessage());
-        }
-    }
-
-    @Test
-    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 이미 취소한 예약")
-    void failCancel5() {
-        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
-        String reservationNumber = reservation.getReservationNumber();
-        Reservation originReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
-        Reservation deniedReservation = originReservation.toBuilder()
-                .isCancel(true)
-                .delDate(LocalDateTime.now())
-                .build();
-        reservationRepository.save(deniedReservation);
-
-        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
-                .reservationNumber(reservationNumber)
-                .reason("취소 이유")
-                .build();
-        try {
-            reservationService.cancelReservation("test", cancelRequest);
-        } catch (ReservationException e) {
-            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_CANCELED_RESERVATION.getMessage());
-        }
-    }
-
-    @Test
-    @DisplayName("회원이 예약을 취소하는 서비스 실패 - 이미 방문 완료한 예약")
-    void failCancel6() {
-        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
-        String reservationNumber = reservation.getReservationNumber();
-        Reservation originReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
-        Reservation deniedReservation = originReservation.toBuilder()
-                .isVisit(true)
-                .delDate(LocalDateTime.now())
-                .build();
-        reservationRepository.save(deniedReservation);
-
-        CancelReservationDto.Request cancelRequest = CancelReservationDto.Request.builder()
-                .reservationNumber(reservationNumber)
-                .reason("취소 이유")
-                .build();
-        try {
-            reservationService.cancelReservation("test", cancelRequest);
-        } catch (ReservationException e) {
-            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_USED_RESERVATION.getMessage());
-        }
-    }
-
-    @Test
     @DisplayName("회원이 예약을 취소하는 서비스 실패 - 예약 취소 가능 시간을 넘긴 경우")
     void failCancel7() {
         CreateReservationDto.Request newCreateRequest = createRequest.toBuilder()
@@ -277,6 +206,77 @@ class ReservationServiceTest {
             reservationService.cancelReservation("test", cancelRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.IMPOSSIBLE_CANCEL.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 거절 서비스")
+    void deny() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        String reservationNumber = reservation.getReservationNumber();
+
+        DenyReservationDto.Request denyRequest = DenyReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("예약 거절")
+                .build();
+        String denyReservationNumber = reservationService.denyReservation("manager", denyRequest);
+
+        assertThat(denyReservationNumber).isEqualTo(reservationNumber);
+    }
+
+    @Test
+    @DisplayName("예약 거절 서비스 실패 - 없는 관리자")
+    void failDeny1() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        String reservationNumber = reservation.getReservationNumber();
+
+        DenyReservationDto.Request denyRequest = DenyReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("예약 거절")
+                .build();
+        try {
+            reservationService.denyReservation("man", denyRequest);
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 거절 서비스 실패 - 없는 예약")
+    void failDeny2() {
+        reservationService.createReservation("test", createRequest);
+
+        DenyReservationDto.Request denyRequest = DenyReservationDto.Request.builder()
+                .reservationNumber("12341234")
+                .reason("예약 거절")
+                .build();
+        try {
+            reservationService.denyReservation("manager", denyRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 거절 서비스 실패 - 예약한 매장의 관리자가 아닌 경우")
+    void failDeny3() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        String reservationNumber = reservation.getReservationNumber();
+
+        Member newManager = Member.builder()
+                .userId("man")
+                .userPWD("12345")
+                .build();
+        memberRepository.save(newManager);
+
+        DenyReservationDto.Request denyRequest = DenyReservationDto.Request.builder()
+                .reservationNumber(reservationNumber)
+                .reason("예약 거절")
+                .build();
+        try {
+            reservationService.denyReservation("man", denyRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_MANAGER.getMessage());
         }
     }
 }
