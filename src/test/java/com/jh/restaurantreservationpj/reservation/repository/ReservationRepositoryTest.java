@@ -116,4 +116,12 @@ class ReservationRepositoryTest {
 
         assertThat(reservationRepository.existsByReservationMemberAndReservationRestaurantAndDelDate(member, restaurant, null)).isEqualTo(true);
     }
+
+    @Test
+    @DisplayName("어떠한 경로로든 처리되지 않은 예약 조회")
+    void findNotDeleteReservation() {
+        Reservation reservation = reservationRepository.findByReservationNumberAndDelDate("12341234", null).orElse(null);
+
+        assertThat(reservation.getReservationNumber()).isEqualTo("12341234");
+    }
 }
