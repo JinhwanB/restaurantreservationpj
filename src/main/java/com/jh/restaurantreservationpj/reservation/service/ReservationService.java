@@ -5,6 +5,7 @@ import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.reservation.domain.Reservation;
+import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CheckForManagerReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationErrorCode;
@@ -35,7 +36,10 @@ public class ReservationService {
 
     static int reservationNum = 10000000;
 
+    static final String AUTO_CANCEL_MESSAGE = "예약 시간이 지나 자동 취소처리 되었습니다.";
+
     // 회원이 예약 생성하는 서비스
+    // 예약은 당일 예약만 가능
     public CreateReservationDto.Response createReservation(String memberId, CreateReservationDto.Request request) {
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
@@ -57,7 +61,6 @@ public class ReservationService {
                 .reservationRestaurant(restaurant)
                 .reservationTime(request.getTime().trim())
                 .isCancel(false)
-                .isAccept(false)
                 .isVisit(false)
                 .build();
         Reservation save = reservationRepository.save(reservation);
@@ -70,17 +73,29 @@ public class ReservationService {
     예약 수정은 불가 대신 취소 가능
     취소는 예약 시간 1시간 전까지만 가능
      */
-    public String cancelFromMemberReservation(String memberId, String reservationNumber) {
+    public String cancelFromMemberReservation(String memberId, CancelReservationDto.Request request) {
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
+        String reservationNumber = request.getReservationNumber();
         Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+        if (validUsefulReservation(reservation)) { // 이미 예약 시간이 지난 경우 자동 취소 처리
+            Reservation autoCancel = reservation.toBuilder()
+                    .isCancel(true)
+                    .deniedMessage(AUTO_CANCEL_MESSAGE)
+                    .delDate(reservation.getDelDate() != null ? LocalDateTime.now() : reservation.getDelDate())
+                    .build();
+            reservationRepository.save(autoCancel);
+
+            throw new ReservationException(ReservationErrorCode.AUTO_CANCEL);
+        }
+
         Member reservationMember = reservation.getReservationMember();
         if (member != reservationMember) { // 예약 정보의 회원과 다른 경우
             throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MEMBER);
         }
 
         if (reservation.getDelDate() != null) {
-            if (!reservation.isAccept()) { // 예약 거절된 예약인 경우
+            if (Boolean.FALSE.equals(reservation.getIsAccept())) { // 예약 거절된 예약인 경우
                 throw new ReservationException(ReservationErrorCode.ALREADY_DENIED_RESERVATION);
             }
 
@@ -95,14 +110,16 @@ public class ReservationService {
 
         // 현재 예약 한 시간 전을 넘겼는지 확인
         LocalDateTime now = LocalDateTime.now(); // 현재 시간
-        LocalDateTime reservationTime = stringToLocalDateTime(reservation.getReservationTime()); // 예약 시간
+        LocalDateTime reservationTime = stringToTodayLocalDateTime(reservation.getReservationTime()); // 예약 시간
         LocalDateTime beforeOneHour = reservationTime.minusHours(1); // 예약 1시간 전
         if (now.isAfter(beforeOneHour)) {
             throw new ReservationException(ReservationErrorCode.IMPOSSIBLE_CANCEL);
         }
 
+        String reason = request.getReason().trim();
         Reservation canceledReservation = reservation.toBuilder()
                 .isCancel(true)
+                .deniedMessage(reason)
                 .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
                 .build();
         reservationRepository.save(canceledReservation);
@@ -144,10 +161,13 @@ public class ReservationService {
     private void validReservationTime(Restaurant restaurant, String reservationTime) {
         LocalDateTime now = LocalDateTime.now();
 
-        LocalDateTime restaurantOpenTime = stringToLocalDateTime(restaurant.getOpenTime()); // 매장 오픈 시간
-        LocalDateTime restaurantCloseTime = stringToLocalDateTime(restaurant.getCloseTime()); // 매장 마감 시간
+        int openTime = Integer.parseInt(restaurant.getOpenTime());
+        int closeTime = Integer.parseInt(restaurant.getCloseTime());
 
-        LocalDateTime hopeTime = stringToLocalDateTime(reservationTime); // 희망 예약 시간
+        LocalDateTime restaurantOpenTime = stringToTodayLocalDateTime(restaurant.getOpenTime()); // 매장 오픈 시간
+        LocalDateTime restaurantCloseTime = openTime > closeTime ? stringToTomorrowLocalDateTime(restaurant.getCloseTime()) : stringToTodayLocalDateTime(restaurant.getCloseTime()); // 매장 마감 시간
+
+        LocalDateTime hopeTime = stringToTodayLocalDateTime(reservationTime); // 희망 예약 시간
 
         // 예약하고자 하는 시간이 현재 시간보다 이전이거나 매장 오픈시간보다 이전인지 또는 매장 마감시간 이후인지 확인
         if (hopeTime.isBefore(now) || hopeTime.isBefore(restaurantOpenTime) || hopeTime.isAfter(restaurantCloseTime)) {
@@ -155,8 +175,8 @@ public class ReservationService {
         }
     }
 
-    // 문자열 시간을 LocalDateTime으로 변경
-    private LocalDateTime stringToLocalDateTime(String time) {
+    // 문자열 시간을 오늘 LocalDateTime으로 변경
+    private LocalDateTime stringToTodayLocalDateTime(String time) {
         LocalDateTime now = LocalDateTime.now();
         int year = now.getYear();
         int month = now.getMonth().getValue();
@@ -165,5 +185,25 @@ public class ReservationService {
         int stringToTime = Integer.parseInt(time);
 
         return LocalDateTime.of(year, month, day, stringToTime, 0);
+    }
+
+    // 문자열 시간을 다음날 LocalDateTime으로 변경 (13시부터 03시까지 운영의 경우)
+    private LocalDateTime stringToTomorrowLocalDateTime(String time) {
+        LocalDateTime tomorrow = LocalDateTime.now().plusDays(1);
+        int year = tomorrow.getYear();
+        int month = tomorrow.getMonth().getValue();
+        int day = tomorrow.getDayOfMonth();
+
+        int stringToTime = Integer.parseInt(time);
+
+        return LocalDateTime.of(year, month, day, stringToTime, 0);
+    }
+
+    // 예약이 예약한 시간을 이미 지난 예약인지 확인
+    private boolean validUsefulReservation(Reservation reservation) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime reservationTime = stringToTodayLocalDateTime(reservation.getReservationTime());
+
+        return !reservation.isVisit() && now.isAfter(reservationTime);
     }
 }
