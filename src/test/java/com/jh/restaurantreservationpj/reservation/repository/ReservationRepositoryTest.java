@@ -124,4 +124,14 @@ class ReservationRepositoryTest {
 
         assertThat(reservation.getReservationNumber()).isEqualTo("12341234");
     }
+
+    @Test
+    @DisplayName("회원의 예약 리스트 조회")
+    void memberReservations() {
+        Member member = memberRepository.findByUserId("test").orElse(null);
+        Page<Reservation> memberReservationList = reservationRepository.findAllByReservationMember(member, pageable);
+
+        assertThat(memberReservationList.getContent()).hasSize(1);
+        assertThat(memberReservationList.getContent().get(0).getReservationMember().getUserId()).isEqualTo("test");
+    }
 }
