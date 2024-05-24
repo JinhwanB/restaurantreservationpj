@@ -3,7 +3,7 @@ package com.jh.restaurantreservationpj.reservation.dto;
 import lombok.*;
 
 // 회원이 예약 조회 시 관련된 dto
-public class CheckForMemberResponse {
+public class CheckForMemberReservationDto {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
