@@ -130,7 +130,7 @@ class ReservationServiceTest {
                 .reservationNumber(reservationNumber)
                 .reason("취소 이유")
                 .build();
-        String canceledReservationNumber = reservationService.cancelFromMemberReservation("test", cancelRequest);
+        String canceledReservationNumber = reservationService.cancelReservation("test", cancelRequest);
 
         assertThat(reservationNumber).isEqualTo(canceledReservationNumber);
     }
@@ -146,7 +146,7 @@ class ReservationServiceTest {
                 .reason("취소 이유")
                 .build();
         try {
-            reservationService.cancelFromMemberReservation("tt", cancelRequest);
+            reservationService.cancelReservation("tt", cancelRequest);
         } catch (MemberException e) {
             assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
         }
@@ -162,7 +162,7 @@ class ReservationServiceTest {
                 .reason("취소 이유")
                 .build();
         try {
-            reservationService.cancelFromMemberReservation("test", cancelRequest);
+            reservationService.cancelReservation("test", cancelRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
         }
@@ -185,7 +185,7 @@ class ReservationServiceTest {
                 .reason("취소 이유")
                 .build();
         try {
-            reservationService.cancelFromMemberReservation("ttt", cancelRequest);
+            reservationService.cancelReservation("ttt", cancelRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_MEMBER.getMessage());
         }
@@ -208,7 +208,7 @@ class ReservationServiceTest {
                 .reason("취소 이유")
                 .build();
         try {
-            reservationService.cancelFromMemberReservation("test", cancelRequest);
+            reservationService.cancelReservation("test", cancelRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_DENIED_RESERVATION.getMessage());
         }
@@ -231,7 +231,7 @@ class ReservationServiceTest {
                 .reason("취소 이유")
                 .build();
         try {
-            reservationService.cancelFromMemberReservation("test", cancelRequest);
+            reservationService.cancelReservation("test", cancelRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_CANCELED_RESERVATION.getMessage());
         }
@@ -254,7 +254,7 @@ class ReservationServiceTest {
                 .reason("취소 이유")
                 .build();
         try {
-            reservationService.cancelFromMemberReservation("test", cancelRequest);
+            reservationService.cancelReservation("test", cancelRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.ALREADY_USED_RESERVATION.getMessage());
         }
@@ -274,7 +274,7 @@ class ReservationServiceTest {
                 .build();
 
         try {
-            reservationService.cancelFromMemberReservation("test", cancelRequest);
+            reservationService.cancelReservation("test", cancelRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.IMPOSSIBLE_CANCEL.getMessage());
         }
