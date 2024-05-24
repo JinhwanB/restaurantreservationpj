@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
+// 예약 거절 관련 dto
 public class DenyReservationDto {
 
     @Getter
