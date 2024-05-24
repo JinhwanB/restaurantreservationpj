@@ -5,6 +5,7 @@ import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.CheckForManagerReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationErrorCode;
@@ -19,6 +20,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +45,7 @@ class ReservationServiceTest {
     private ReservationService reservationService;
 
     CreateReservationDto.Request createRequest;
+    Pageable pageable = PageRequest.of(0, 10, Sort.Direction.ASC, "regDate");
 
     @BeforeEach
     void before() {
@@ -289,5 +295,45 @@ class ReservationServiceTest {
         String acceptedReservationNumber = reservationService.acceptReservation("manager", reservationNumber);
 
         assertThat(acceptedReservationNumber).isEqualTo(reservationNumber);
+    }
+
+    @Test
+    @DisplayName("점장이 매장 예약 목록을 확인하는 서비스")
+    void restaurantReservations() {
+        reservationService.createReservation("test", createRequest);
+
+        Member newMember = Member.builder()
+                .userPWD("12345")
+                .userId("ttt")
+                .build();
+        memberRepository.save(newMember);
+
+        reservationService.createReservation("ttt", createRequest);
+
+        Page<CheckForManagerReservationDto.Response> reservationList = reservationService.checkForManagerReservation("매장", pageable);
+
+        assertThat(reservationList.getContent()).hasSize(2);
+        assertThat(reservationList.getContent().get(0).getMemberId()).isEqualTo("test");
+        assertThat(reservationList.getContent().get(1).getMemberId()).isEqualTo("ttt");
+    }
+
+    @Test
+    @DisplayName("점장이 매장 예약 목록을 확인하는 서비스 실패 - 없는 매장")
+    void failRestaurantReservations() {
+        reservationService.createReservation("test", createRequest);
+
+        Member newMember = Member.builder()
+                .userPWD("12345")
+                .userId("ttt")
+                .build();
+        memberRepository.save(newMember);
+
+        reservationService.createReservation("ttt", createRequest);
+
+        try {
+            reservationService.checkForManagerReservation("매", pageable);
+        } catch (RestaurantException e) {
+            assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
+        }
     }
 }
