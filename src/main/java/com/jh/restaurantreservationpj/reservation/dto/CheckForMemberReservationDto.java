@@ -21,6 +21,7 @@ public class CheckForMemberReservationDto {
     @Getter
     @AllArgsConstructor
     public enum DetailMessage {
+        WAIT("예약 승인 대기중입니다."),
         VISIT("매장에 방문하셨습니다. 후기 작성이 가능합니다."),
         CANCEL("취소된 예약입니다."),
         DENY("예약이 거절되었습니다."),
