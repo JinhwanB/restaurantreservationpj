@@ -41,7 +41,7 @@ public class Reservation extends BaseTimeEntity {
     private Boolean isAccept; // 점장 예약 승인 여부
 
     @Column
-    private String deniedMessage; // 예약 거절 이유
+    private String deniedMessage; // 승인 거절 및 취소 이유
 
     @Column(nullable = false)
     private boolean isVisit; // 방문 확인 여부
