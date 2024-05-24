@@ -8,6 +8,7 @@ import com.jh.restaurantreservationpj.reservation.domain.Reservation;
 import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CheckForManagerReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationErrorCode;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationException;
 import com.jh.restaurantreservationpj.reservation.repository.ReservationRepository;
@@ -73,39 +74,18 @@ public class ReservationService {
     예약 수정은 불가 대신 취소 가능
     취소는 예약 시간 1시간 전까지만 가능
      */
-    public String cancelFromMemberReservation(String memberId, CancelReservationDto.Request request) {
+    public String cancelReservation(String memberId, CancelReservationDto.Request request) {
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         String reservationNumber = request.getReservationNumber();
-        Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+        Reservation reservation = reservationRepository.findByReservationNumberAndDelDate(reservationNumber, null).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
         if (validUsefulReservation(reservation)) { // 이미 예약 시간이 지난 경우 자동 취소 처리
-            Reservation autoCancel = reservation.toBuilder()
-                    .isCancel(true)
-                    .deniedMessage(AUTO_CANCEL_MESSAGE)
-                    .delDate(reservation.getDelDate() != null ? LocalDateTime.now() : reservation.getDelDate())
-                    .build();
-            reservationRepository.save(autoCancel);
-
             throw new ReservationException(ReservationErrorCode.AUTO_CANCEL);
         }
 
         Member reservationMember = reservation.getReservationMember();
         if (member != reservationMember) { // 예약 정보의 회원과 다른 경우
             throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MEMBER);
-        }
-
-        if (reservation.getDelDate() != null) {
-            if (Boolean.FALSE.equals(reservation.getIsAccept())) { // 예약 거절된 예약인 경우
-                throw new ReservationException(ReservationErrorCode.ALREADY_DENIED_RESERVATION);
-            }
-
-            if (reservation.isCancel()) { // 이미 취소한 예약인 경우
-                throw new ReservationException(ReservationErrorCode.ALREADY_CANCELED_RESERVATION);
-            }
-
-            if (reservation.isVisit()) { // 이미 방문 완료한 예약인 경우
-                throw new ReservationException(ReservationErrorCode.ALREADY_USED_RESERVATION);
-            }
         }
 
         // 현재 예약 한 시간 전을 넘겼는지 확인
@@ -125,6 +105,34 @@ public class ReservationService {
         reservationRepository.save(canceledReservation);
 
         return canceledReservation.getReservationNumber();
+    }
+
+    // 예약 승인 서비스
+
+    // 예약 거절 서비스
+    public String denyReservation(String managerId, DenyReservationDto.Request request) {
+        Member manager = memberRepository.findByUserId(managerId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        String reservationNumber = request.getReservationNumber();
+        Reservation reservation = reservationRepository.findByReservationNumberAndDelDate(reservationNumber, null).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+
+        if (reservation.getReservationRestaurant().getManager() != manager) { // 예약한 매장의 관리자가 아닌 경우
+            throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MANAGER);
+        }
+
+        if (validUsefulReservation(reservation)) { // 이미 예약한 회원이 방문하지 않아 취소된 경우
+            throw new ReservationException(ReservationErrorCode.AUTO_CANCEL);
+        }
+
+        String deniedMessage = request.getReason().trim();
+        Reservation deniedReservation = reservation.toBuilder()
+                .isAccept(false)
+                .deniedMessage(deniedMessage)
+                .delDate(LocalDateTime.now())
+                .build();
+        reservationRepository.save(deniedReservation);
+
+        return deniedReservation.getReservationNumber();
     }
 
     // 점장이 매장 예약 목록을 확인하는 서비스
@@ -204,6 +212,17 @@ public class ReservationService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime reservationTime = stringToTodayLocalDateTime(reservation.getReservationTime());
 
-        return !reservation.isVisit() && now.isAfter(reservationTime);
+        if (!reservation.isVisit() && now.isAfter(reservationTime)) { // 이미 예약 시간이 지난 경우 자동 취소 처리
+            Reservation autoCancel = reservation.toBuilder()
+                    .isCancel(true)
+                    .deniedMessage(AUTO_CANCEL_MESSAGE)
+                    .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
+                    .build();
+            reservationRepository.save(autoCancel);
+
+            return true;
+        }
+
+        return false;
     }
 }
