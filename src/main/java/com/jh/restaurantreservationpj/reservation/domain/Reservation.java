@@ -7,7 +7,6 @@ import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@SQLDelete(sql = "UPDATE reservation SET del_date = now() WHERE id=?")
 public class Reservation extends BaseTimeEntity {
 
     @Id
