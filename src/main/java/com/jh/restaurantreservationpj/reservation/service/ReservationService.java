@@ -77,7 +77,8 @@ public class ReservationService {
 
         String reservationNumber = request.getReservationNumber();
         Reservation reservation = reservationRepository.findByReservationNumberAndDelDate(reservationNumber, null).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
-        if (validUsefulReservation(reservation)) { // 이미 예약 시간이 지난 경우 자동 취소 처리
+
+        if (validUsefulReservation(reservation)) { // 이미 방문 인증 시간이 지난 경우 자동 취소 처리
             throw new ReservationException(ReservationErrorCode.AUTO_CANCEL);
         }
 
@@ -97,8 +98,9 @@ public class ReservationService {
         String reason = request.getReason().trim();
         Reservation canceledReservation = reservation.toBuilder()
                 .isCancel(true)
+                .isAccept(false)
                 .deniedMessage(reason)
-                .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
+                .delDate(LocalDateTime.now())
                 .build();
         reservationRepository.save(canceledReservation);
 
@@ -121,7 +123,7 @@ public class ReservationService {
 
         Reservation acceptedReservation = reservation.toBuilder()
                 .isAccept(true)
-                .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
+                .delDate(LocalDateTime.now())
                 .build();
         reservationRepository.save(acceptedReservation);
 
@@ -147,11 +149,46 @@ public class ReservationService {
         Reservation deniedReservation = reservation.toBuilder()
                 .isAccept(false)
                 .deniedMessage(deniedMessage)
-                .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
+                .delDate(LocalDateTime.now())
                 .build();
         reservationRepository.save(deniedReservation);
 
         return deniedReservation.getReservationNumber();
+    }
+
+    // 예약 방문 인증 서비스
+    public String useReservation(String memberId, UseReservationDto.Request request) {
+        String reservationNumber = request.getReservationNumber();
+        String restaurantName = request.getRestaurantName().trim();
+
+        Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+
+        if (validUsefulReservation(reservation)) { // 이미 방문 인증 시간이 지난 경우
+            throw new ReservationException(ReservationErrorCode.AUTO_CANCEL);
+        }
+
+        if (!Boolean.TRUE.equals(reservation.getIsAccept())) { // 승인된 예약이 아닌 경우
+            throw new ReservationException(ReservationErrorCode.IMPOSSIBLE_VISIT);
+        }
+
+        if (reservation.getReservationMember() != member) { // 예약한 회원이 아닌 경우
+            throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MEMBER);
+        }
+
+        if (!reservation.getReservationRestaurant().getName().equals(restaurantName)) { // 예약한 매장이 아닌 경우
+            throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_RESTAURANT);
+        }
+
+        Reservation visitedReservation = reservation.toBuilder()
+                .isVisit(true)
+                .build();
+        reservationRepository.save(visitedReservation);
+
+        // todo: 회원에게 리뷰 작성 권한 부여하는 로직 필요
+
+        return reservationNumber;
     }
 
     // 예약 상세 조회 서비스
@@ -251,13 +288,16 @@ public class ReservationService {
         return LocalDateTime.of(year, month, day, stringToTime, 0);
     }
 
-    // 예약이 예약한 시간을 이미 지난 예약인지 확인
+    // 예약이 방문 인증 시간을 이미 지난 예약인지 확인
     private boolean validUsefulReservation(Reservation reservation) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime reservationTime = stringToTodayLocalDateTime(reservation.getReservationTime());
+        LocalDateTime visitTime = reservationTime.minusMinutes(10);
 
-        if (!reservation.isVisit() && now.isAfter(reservationTime)) { // 이미 예약 시간이 지난 경우 자동 취소 처리
+        if (Boolean.TRUE.equals(reservation.getIsAccept()) && !reservation.isVisit() && now.isAfter(visitTime)) { // 이미 방문 인증 시간이 지난 경우 자동 취소 처리
             Reservation autoCancel = reservation.toBuilder()
+                    .isAccept(false)
+                    .isVisit(false)
                     .isCancel(true)
                     .deniedMessage(AUTO_CANCEL_MESSAGE)
                     .delDate(reservation.getDelDate() != null ? reservation.getDelDate() : LocalDateTime.now())
@@ -276,12 +316,10 @@ public class ReservationService {
         CheckForMemberReservationDto.Response result = null;
 
         if (validUsefulReservation(reservation)) { // 사용 가능한 예약인지 확인
-            CheckForMemberReservationDto.Response newResponse = response.toBuilder()
+            return response.toBuilder()
                     .detailMessage(CheckForMemberReservationDto.DetailMessage.CANCEL.getMessage())
                     .deniedMessage(AUTO_CANCEL_MESSAGE)
                     .build();
-
-            return newResponse;
         }
 
         if (reservation.getDelDate() == null) { // 예약 신청만 되어있는 상태(예약 승인 대기중)
