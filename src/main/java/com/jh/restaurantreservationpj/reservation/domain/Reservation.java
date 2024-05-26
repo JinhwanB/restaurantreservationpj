@@ -3,6 +3,7 @@ package com.jh.restaurantreservationpj.reservation.domain;
 import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.reservation.dto.CheckForManagerReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.CheckForMemberReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import jakarta.persistence.*;
@@ -57,6 +58,15 @@ public class Reservation extends BaseTimeEntity {
                 .memberId(reservationMember.getUserId())
                 .restaurantName(reservationRestaurant.getName())
                 .reservationTime(reservationTime + "시")
+                .build();
+    }
+
+    // Entity -> CheckResponse (회원용)
+    public CheckForMemberReservationDto.Response toCheckForMemberResponse() {
+        return CheckForMemberReservationDto.Response.builder()
+                .reservationTime(reservationTime + "시")
+                .reservationNumber(reservationNumber)
+                .restaurantName(reservationRestaurant.getName())
                 .build();
     }
 
