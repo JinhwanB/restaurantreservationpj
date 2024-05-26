@@ -154,6 +154,13 @@ public class ReservationService {
         return deniedReservation.getReservationNumber();
     }
 
+    // 예약 상세 조회 서비스
+    public CheckForMemberReservationDto.Response checkReservation(String reservationNumber) {
+        Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+
+        return checkForReservation(reservation);
+    }
+
     // 점장이 매장 예약 목록을 확인하는 서비스
     // 페이징처리
     @Transactional(readOnly = true)
@@ -180,46 +187,8 @@ public class ReservationService {
         List<CheckForMemberReservationDto.Response> newList = new ArrayList<>();
         List<Reservation> content = reservationList.getContent();
         for (Reservation reservation : content) {
-            CheckForMemberReservationDto.Response response = reservation.toCheckForMemberResponse();
-            CheckForMemberReservationDto.Response result = null;
-
-            if (validUsefulReservation(reservation)) { // 사용 가능한 예약인지 확인
-                CheckForMemberReservationDto.Response newResponse = response.toBuilder()
-                        .detailMessage(CheckForMemberReservationDto.DetailMessage.CANCEL.getMessage())
-                        .deniedMessage(AUTO_CANCEL_MESSAGE)
-                        .build();
-
-                newList.add(newResponse);
-                continue;
-            }
-
-            if (reservation.getDelDate() == null) { // 예약 신청만 되어있는 상태(예약 승인 대기중)
-                result = response.toBuilder()
-                        .detailMessage(CheckForMemberReservationDto.DetailMessage.WAIT.getMessage())
-                        .build();
-            } else { // 예약이 처리 결과가 있는 경우 (예: 예약 승인 또는 거절, 취소, 방문 완료 등)
-                if (Boolean.TRUE.equals(reservation.getIsAccept())) { // 승인된 예약
-                    result = response.toBuilder()
-                            .detailMessage(CheckForMemberReservationDto.DetailMessage.ACCEPT.getMessage())
-                            .build();
-                } else if (Boolean.FALSE.equals(reservation.getIsAccept())) { // 거절된 예약
-                    result = response.toBuilder()
-                            .deniedMessage(CheckForMemberReservationDto.DetailMessage.DENY.getMessage())
-                            .deniedMessage(reservation.getDeniedMessage())
-                            .build();
-                } else if (reservation.isVisit()) { // 방문 완료한 예약
-                    result = response.toBuilder()
-                            .detailMessage(CheckForMemberReservationDto.DetailMessage.VISIT.getMessage())
-                            .build();
-                } else if (reservation.isCancel()) { // 취소된 예약
-                    result = response.toBuilder()
-                            .detailMessage(CheckForMemberReservationDto.DetailMessage.CANCEL.getMessage())
-                            .deniedMessage(reservation.getDeniedMessage())
-                            .build();
-                }
-            }
-
-            newList.add(result);
+            CheckForMemberReservationDto.Response response = checkForReservation(reservation);
+            newList.add(response);
         }
 
         return new PageImpl<>(newList, pageable, newList.size());
@@ -299,5 +268,48 @@ public class ReservationService {
         }
 
         return false;
+    }
+
+    // CheckFroMemberReservationDtoResponse로 변경하는 메소드
+    private CheckForMemberReservationDto.Response checkForReservation(Reservation reservation) {
+        CheckForMemberReservationDto.Response response = reservation.toCheckForMemberResponse();
+        CheckForMemberReservationDto.Response result = null;
+
+        if (validUsefulReservation(reservation)) { // 사용 가능한 예약인지 확인
+            CheckForMemberReservationDto.Response newResponse = response.toBuilder()
+                    .detailMessage(CheckForMemberReservationDto.DetailMessage.CANCEL.getMessage())
+                    .deniedMessage(AUTO_CANCEL_MESSAGE)
+                    .build();
+
+            return newResponse;
+        }
+
+        if (reservation.getDelDate() == null) { // 예약 신청만 되어있는 상태(예약 승인 대기중)
+            result = response.toBuilder()
+                    .detailMessage(CheckForMemberReservationDto.DetailMessage.WAIT.getMessage())
+                    .build();
+        } else { // 예약이 처리 결과가 있는 경우 (예: 예약 승인 또는 거절, 취소, 방문 완료 등)
+            if (Boolean.TRUE.equals(reservation.getIsAccept())) { // 승인된 예약
+                result = response.toBuilder()
+                        .detailMessage(CheckForMemberReservationDto.DetailMessage.ACCEPT.getMessage())
+                        .build();
+            } else if (Boolean.FALSE.equals(reservation.getIsAccept())) { // 거절된 예약
+                result = response.toBuilder()
+                        .deniedMessage(CheckForMemberReservationDto.DetailMessage.DENY.getMessage())
+                        .deniedMessage(reservation.getDeniedMessage())
+                        .build();
+            } else if (reservation.isVisit()) { // 방문 완료한 예약
+                result = response.toBuilder()
+                        .detailMessage(CheckForMemberReservationDto.DetailMessage.VISIT.getMessage())
+                        .build();
+            } else if (reservation.isCancel()) { // 취소된 예약
+                result = response.toBuilder()
+                        .detailMessage(CheckForMemberReservationDto.DetailMessage.CANCEL.getMessage())
+                        .deniedMessage(reservation.getDeniedMessage())
+                        .build();
+            }
+        }
+
+        return result;
     }
 }
