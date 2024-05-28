@@ -3,6 +3,7 @@ package com.jh.restaurantreservationpj.review.domain;
 import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
+import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -39,4 +40,13 @@ public class Review extends BaseTimeEntity {
 
     @Column
     private LocalDateTime delDate; // 삭제 날짜
+
+    // Entity -> CreateResponse
+    public CreateReviewDto.Response toCreateResponse() {
+        return CreateReviewDto.Response.builder()
+                .id(id)
+                .title(title)
+                .content(content)
+                .build();
+    }
 }
