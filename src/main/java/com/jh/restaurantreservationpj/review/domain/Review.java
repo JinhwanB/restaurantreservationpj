@@ -4,6 +4,7 @@ import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
+import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -44,6 +45,15 @@ public class Review extends BaseTimeEntity {
     // Entity -> CreateResponse
     public CreateReviewDto.Response toCreateResponse() {
         return CreateReviewDto.Response.builder()
+                .id(id)
+                .title(title)
+                .content(content)
+                .build();
+    }
+
+    // Entity -> ModifyResponse
+    public ModifyReviewDto.Response toModifyResponse() {
+        return ModifyReviewDto.Response.builder()
                 .id(id)
                 .title(title)
                 .content(content)
