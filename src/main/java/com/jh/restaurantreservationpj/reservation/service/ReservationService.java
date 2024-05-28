@@ -192,7 +192,6 @@ public class ReservationService {
     }
 
     // 예약 상세 조회 서비스
-    @Transactional(readOnly = true)
     public CheckForMemberReservationDto.Response checkReservation(String reservationNumber) {
         Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
 
