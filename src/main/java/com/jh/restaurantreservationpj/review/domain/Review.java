@@ -3,6 +3,7 @@ package com.jh.restaurantreservationpj.review.domain;
 import com.jh.restaurantreservationpj.config.BaseTimeEntity;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
+import com.jh.restaurantreservationpj.review.dto.CheckReviewDto;
 import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
 import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
 import jakarta.persistence.*;
@@ -55,6 +56,16 @@ public class Review extends BaseTimeEntity {
     public ModifyReviewDto.Response toModifyResponse() {
         return ModifyReviewDto.Response.builder()
                 .id(id)
+                .title(title)
+                .content(content)
+                .build();
+    }
+
+    // Entity -> CheckResponse
+    public CheckReviewDto.Response toCheckResponse() {
+        return CheckReviewDto.Response.builder()
+                .memberId(member.getUserId())
+                .restaurantName(restaurant.getName())
                 .title(title)
                 .content(content)
                 .build();
