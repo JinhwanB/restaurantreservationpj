@@ -4,6 +4,7 @@ import com.jh.restaurantreservationpj.config.GlobalResponse;
 import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.UseReservationDto;
 import com.jh.restaurantreservationpj.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -58,6 +59,16 @@ public class ReservationController {
         String managerId = null;
 
         String response = reservationService.denyReservation(managerId, request);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 방문 인증 컨트롤러
+    @PutMapping("/reservation/visit")
+    public ResponseEntity<GlobalResponse<String>> visit(@Valid @RequestBody UseReservationDto.Request request) {
+        String memberId = null;
+
+        String response = reservationService.useReservation(memberId, request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
