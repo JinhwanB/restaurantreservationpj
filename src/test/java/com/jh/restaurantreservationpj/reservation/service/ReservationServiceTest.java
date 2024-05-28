@@ -46,6 +46,7 @@ class ReservationServiceTest {
 
     CreateReservationDto.Request createRequest;
     Pageable pageable = PageRequest.of(0, 10, Sort.Direction.ASC, "regDate");
+    Pageable pageableForMember = PageRequest.of(0, 10, Sort.Direction.DESC, "regDate");
 
     @BeforeEach
     void before() {
@@ -480,6 +481,27 @@ class ReservationServiceTest {
             reservationService.checkReservation("10101010");
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 예약 목록을 조회하는 서비스")
+    void checkForMember() {
+        reservationService.createReservation("test", createRequest);
+
+        Page<CheckForMemberReservationDto.Response> reservationList = reservationService.checkForMemberReservation("test", pageableForMember);
+
+        assertThat(reservationList.getTotalElements()).isEqualTo(1);
+        assertThat(reservationList.getContent().get(0).getDetailMessage()).isEqualTo(CheckForMemberReservationDto.DetailMessage.WAIT.getMessage());
+    }
+
+    @Test
+    @DisplayName("회원이 예약 목록을 조회하는 서비스 실패 - 없는 회원")
+    void failCheckForMember() {
+        try {
+            reservationService.checkForMemberReservation("ttt", pageableForMember);
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
         }
     }
 }
