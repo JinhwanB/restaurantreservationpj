@@ -9,6 +9,7 @@ import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
 import com.jh.restaurantreservationpj.review.domain.Review;
+import com.jh.restaurantreservationpj.review.dto.CheckReviewDto;
 import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
 import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
 import com.jh.restaurantreservationpj.review.exception.ReviewErrorCode;
@@ -81,5 +82,13 @@ public class ReviewService {
         reviewRepository.delete(review);
 
         return id;
+    }
+
+    // 리뷰 상세 조회 서비스
+    public CheckReviewDto.Response checkReview(Long id) {
+
+        Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewException(ReviewErrorCode.NOT_FOUND_REVIEW));
+
+        return review.toCheckResponse();
     }
 }
