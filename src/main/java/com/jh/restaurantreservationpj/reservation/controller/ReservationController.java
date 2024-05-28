@@ -19,6 +19,7 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
+    // 예약 생성 컨트롤러
     @PostMapping("/reservation")
     public ResponseEntity<GlobalResponse<CreateReservationDto.Response>> create(@Valid @RequestBody CreateReservationDto.Request request) {
         String memberId = null;
