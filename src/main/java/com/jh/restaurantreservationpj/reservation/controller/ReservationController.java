@@ -7,6 +7,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -74,6 +78,14 @@ public class ReservationController {
     @GetMapping("/reservation/{reservationNumber}")
     public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> check(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리 숫자입니다.") @PathVariable String reservationNumber) {
         CheckForMemberReservationDto.Response response = reservationService.checkReservation(reservationNumber);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 점장이 매장 예약 목록을 조회하는 컨트롤러
+    @GetMapping("/{restaurantName}")
+    public ResponseEntity<GlobalResponse<Page<CheckForManagerReservationDto.Response>>> checkForManager(@NotBlank(message = "매장 이름을 입력해주세요.") @PathVariable String restaurantName, @PageableDefault(sort = "regDate", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<CheckForManagerReservationDto.Response> response = reservationService.checkForManagerReservation(restaurantName.trim(), pageable);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
