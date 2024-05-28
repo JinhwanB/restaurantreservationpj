@@ -459,4 +459,27 @@ class ReservationServiceTest {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_RESTAURANT.getMessage());
         }
     }
+
+    @Test
+    @DisplayName("예약 상세 조회 서비스")
+    void detailCheck() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+
+        CheckForMemberReservationDto.Response response = reservationService.checkReservation(reservation.getReservationNumber());
+
+        assertThat(response.getReservationNumber()).isEqualTo(reservation.getReservationNumber());
+        assertThat(response.getDetailMessage()).isEqualTo(CheckForMemberReservationDto.DetailMessage.WAIT.getMessage());
+    }
+
+    @Test
+    @DisplayName("예약 상세 조회 서비스 실패 - 없는 예약")
+    void failDetailCheck() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+
+        try {
+            reservationService.checkReservation("10101010");
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
+        }
+    }
 }
