@@ -1,10 +1,7 @@
 package com.jh.restaurantreservationpj.reservation.controller;
 
 import com.jh.restaurantreservationpj.config.GlobalResponse;
-import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.UseReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.*;
 import com.jh.restaurantreservationpj.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -69,6 +66,14 @@ public class ReservationController {
         String memberId = null;
 
         String response = reservationService.useReservation(memberId, request);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 예약 상세 조회 컨트롤러
+    @GetMapping("/reservation/{reservationNumber}")
+    public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> check(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리 숫자입니다.") @PathVariable String reservationNumber) {
+        CheckForMemberReservationDto.Response response = reservationService.checkReservation(reservationNumber);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
