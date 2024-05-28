@@ -16,8 +16,13 @@ import com.jh.restaurantreservationpj.review.exception.ReviewErrorCode;
 import com.jh.restaurantreservationpj.review.exception.ReviewException;
 import com.jh.restaurantreservationpj.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -90,5 +95,16 @@ public class ReviewService {
         Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewException(ReviewErrorCode.NOT_FOUND_REVIEW));
 
         return review.toCheckResponse();
+    }
+
+    // 리뷰 전체 리스트 조회 서비스
+    public Page<CheckReviewDto.Response> checkReviewList(Pageable pageable) {
+        Page<Review> reviewList = reviewRepository.findAll(pageable);
+        List<Review> content = reviewList.getContent();
+        List<CheckReviewDto.Response> checkResponseList = content.stream()
+                .map(Review::toCheckResponse)
+                .toList();
+
+        return new PageImpl<>(checkResponseList, pageable, checkResponseList.size());
     }
 }
