@@ -89,4 +89,14 @@ public class ReservationController {
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
+
+    // 회원이 예약 목록을 조회하는 컨트롤러
+    @GetMapping
+    public ResponseEntity<GlobalResponse<Page<CheckForMemberReservationDto.Response>>> checkForMember(@PageableDefault(sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        String memberId = null;
+
+        Page<CheckForMemberReservationDto.Response> response = reservationService.checkForMemberReservation(memberId, pageable);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
 }
