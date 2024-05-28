@@ -201,6 +201,7 @@ public class ReservationService {
 
     // 점장이 매장 예약 목록을 확인하는 서비스
     // 페이징처리
+    // 먼저 등록된 예약 순 정렬
     @Transactional(readOnly = true)
     public Page<CheckForManagerReservationDto.Response> checkForManagerReservation(String restaurantName, Pageable pageable) {
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
@@ -217,6 +218,7 @@ public class ReservationService {
     /*
     회원이 예약 목록을 조회하는 서비스
     페이징 처리
+    최신순 정렬
      */
     public Page<CheckForMemberReservationDto.Response> checkForMemberReservation(String memberId, Pageable pageable) {
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
