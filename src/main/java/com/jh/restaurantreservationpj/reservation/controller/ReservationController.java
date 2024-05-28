@@ -3,6 +3,7 @@ package com.jh.restaurantreservationpj.reservation.controller;
 import com.jh.restaurantreservationpj.config.GlobalResponse;
 import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
+import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
 import com.jh.restaurantreservationpj.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -47,6 +48,16 @@ public class ReservationController {
         String managerId = null;
 
         String response = reservationService.acceptReservation(managerId, reservationNumber);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 예약 거절 컨트롤러
+    @PutMapping("/reservation")
+    public ResponseEntity<GlobalResponse<String>> deny(@Valid @RequestBody DenyReservationDto.Request request) {
+        String managerId = null;
+
+        String response = reservationService.denyReservation(managerId, request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
