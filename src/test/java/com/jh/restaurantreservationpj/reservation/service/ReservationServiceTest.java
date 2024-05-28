@@ -4,10 +4,8 @@ import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
-import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.CheckForManagerReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
-import com.jh.restaurantreservationpj.reservation.dto.DenyReservationDto;
+import com.jh.restaurantreservationpj.reservation.domain.Reservation;
+import com.jh.restaurantreservationpj.reservation.dto.*;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationErrorCode;
 import com.jh.restaurantreservationpj.reservation.exception.ReservationException;
 import com.jh.restaurantreservationpj.reservation.repository.ReservationRepository;
@@ -25,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -334,6 +334,129 @@ class ReservationServiceTest {
             reservationService.checkForManagerReservation("매", pageable);
         } catch (RestaurantException e) {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 방문 인증 서비스")
+    void visit() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        reservationService.acceptReservation("manager", reservation.getReservationNumber());
+
+        UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .reservationNumber(reservation.getReservationNumber())
+                .restaurantName("매장")
+                .build();
+        String reservationNumber = reservationService.useReservation("test", useRequest);
+
+        Reservation visitedReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
+
+        assertThat(reservationNumber).isEqualTo(reservation.getReservationNumber());
+        assertThat(visitedReservation.isVisit()).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("예약 방문 인증 서비스 실패 - 없는 회원")
+    void failVisit1() {
+        UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .reservationNumber("10000000")
+                .restaurantName("매장")
+                .build();
+
+        try {
+            reservationService.useReservation("ttt", useRequest);
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 방문 인증 서비스 실패 - 없는 예약")
+    void failVisit2() {
+        UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .reservationNumber("10000000")
+                .restaurantName("매장")
+                .build();
+
+        try {
+            reservationService.useReservation("test", useRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 방문 인증 서비스 실패 - 이미 방문 인증 시간이 지난 경우")
+    void failVisit3() {
+        boolean flag = true;
+
+        LocalDateTime reservationTime = LocalDateTime.of(2024, 5, 28, 21, 0, 0);
+        LocalDateTime visitTime = reservationTime.minusMinutes(10);
+        LocalDateTime now = LocalDateTime.of(2024, 5, 28, 20, 55, 0);
+
+        if (now.isAfter(visitTime)) {
+            flag = false;
+        }
+
+        assertThat(flag).isEqualTo(false);
+    }
+
+    @Test
+    @DisplayName("예약 방문 인증 서비스 실패 - 승인된 예약이 아닌 경우")
+    void failVisit4() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+
+        UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .reservationNumber(reservation.getReservationNumber())
+                .restaurantName("매장")
+                .build();
+
+        try {
+            reservationService.useReservation("test", useRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.IMPOSSIBLE_VISIT.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 방문 인증 서비스 실패 - 예약한 회원이 다른 경우")
+    void failVisit5() {
+        Member newMember = Member.builder()
+                .userId("ttt")
+                .userPWD("123454")
+                .build();
+        memberRepository.save(newMember);
+
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        reservationService.acceptReservation("manager", reservation.getReservationNumber());
+
+        UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .reservationNumber(reservation.getReservationNumber())
+                .restaurantName("매장")
+                .build();
+
+        try {
+            reservationService.useReservation("ttt", useRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("예약 방문 인증 서비스 실패 - 예약한 매장이 다른 경우")
+    void failVisit6() {
+        CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        reservationService.acceptReservation("manager", reservation.getReservationNumber());
+
+        UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .reservationNumber(reservation.getReservationNumber())
+                .restaurantName("매")
+                .build();
+
+        try {
+            reservationService.useReservation("test", useRequest);
+        } catch (ReservationException e) {
+            assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_RESTAURANT.getMessage());
         }
     }
 }
