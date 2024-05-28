@@ -65,4 +65,21 @@ public class ReviewService {
 
         return modifiedReview.toModifyResponse();
     }
+
+    // 리뷰 삭제 서비스
+    public Long deleteReview(Long id, String memberId) {
+
+        Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewException(ReviewErrorCode.NOT_FOUND_REVIEW));
+
+        // todo: 관리자가 아닌 경우에만 실행하도록 추가 조건 필요
+        if (review.getMember() != member) { // 관리자가 아닐 때 리뷰를 작성한 회원이 아닌 경우
+            throw new ReviewException(ReviewErrorCode.DIFF_MEMBER);
+        }
+
+        reviewRepository.delete(review);
+
+        return id;
+    }
 }
