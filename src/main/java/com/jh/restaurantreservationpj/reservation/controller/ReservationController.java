@@ -5,13 +5,17 @@ import com.jh.restaurantreservationpj.reservation.dto.CancelReservationDto;
 import com.jh.restaurantreservationpj.reservation.dto.CreateReservationDto;
 import com.jh.restaurantreservationpj.reservation.service.ReservationService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/reservations")
 @RequiredArgsConstructor
+@Validated
 // todo: 헤더 정보의 토큰을 통해 회원 아이디를 가져오는 로직 필요
 public class ReservationController {
 
@@ -33,6 +37,16 @@ public class ReservationController {
         String memberId = null;
 
         String response = reservationService.cancelReservation(memberId, request);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 예약 승인 컨트롤러
+    @PutMapping("/reservation/{reservationNumber}")
+    public ResponseEntity<GlobalResponse<String>> accept(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리의 숫자입니다.") @PathVariable String reservationNumber) {
+        String managerId = null;
+
+        String response = reservationService.acceptReservation(managerId, reservationNumber);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
