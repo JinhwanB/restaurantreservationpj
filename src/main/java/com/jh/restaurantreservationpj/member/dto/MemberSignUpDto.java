@@ -1,6 +1,7 @@
 package com.jh.restaurantreservationpj.member.dto;
 
 import com.jh.restaurantreservationpj.member.domain.Role;
+import com.jh.restaurantreservationpj.validation.Enum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
@@ -23,6 +24,6 @@ public class MemberSignUpDto {
         private String password; // 비밀번호
 
         @NotEmpty(message = "회원의 권한을 입력해주세요.")
-        private List<Role> roles; // 권한
+        private List<@Enum(message = "올바른 권한을 입력해주세요.") Role> roles; // 권한
     }
 }
