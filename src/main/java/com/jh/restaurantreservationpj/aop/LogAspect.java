@@ -18,17 +18,17 @@ import java.lang.reflect.Method;
 public class LogAspect {
 
     // 모든 메소드 포인트컷
-    @Pointcut("execution(* com.jh.restaurantreservationpj..*(..))")
+    @Pointcut("execution(* com.jh.restaurantreservationpj..*(..)) " + "&& !execution(* com.jh.restaurantreservationpj.auth..*(..)) " + "&& !execution(* com.jh.restaurantreservationpj.config..*(..)) " + "&& !execution(* com.jh.restaurantreservationpj.validation..*(..))")
     public void all() {
     }
 
     // Controller클래스의 모든 메소드 포인트컷
-    @Pointcut("execution(* com.jh.restaurantreservationpj..*Controller.*(..))")
+    @Pointcut("execution(* com.jh.restaurantreservationpj.*Controller..*(..))")
     public void controller() {
     }
 
     // Service클래스의 모든 메소드 포인트컷
-    @Pointcut("execution(* com.jh.restaurantreservationpj..*Service.*(..))")
+    @Pointcut("execution(* com.jh.restaurantreservationpj.*Service..*(..))")
     public void service() {
     }
 
@@ -57,7 +57,7 @@ public class LogAspect {
                             log.error("필드 값을 가져올 수 없음", e);
                         }
                     }
-                    
+
                     continue;
                 }
 
