@@ -3,8 +3,6 @@ package com.jh.restaurantreservationpj.member.repository;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.domain.Role;
-import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
-import com.jh.restaurantreservationpj.member.exception.MemberException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +22,7 @@ class MemberRepositoryTest {
     private MemberRepository memberRepository;
 
     @BeforeEach
-    void before(){
+    void before() {
         MemberRole memberRole = MemberRole.builder()
                 .role(Role.ROLE_ADMIN)
                 .build();
@@ -43,7 +41,7 @@ class MemberRepositoryTest {
 
     @Test
     @DisplayName("회원 아이디로 회원 찾기")
-    void findUser(){
+    void findUser() {
         Member member = memberRepository.findByUserId("test").orElse(null);
         MemberRole memberRole = member.getMemberRoles().get(0);
 
@@ -52,13 +50,8 @@ class MemberRepositoryTest {
     }
 
     @Test
-    @DisplayName("회원 아이디로 회원 찾기 실패 - 회원 아이디 없음")
-    void failFindUser(){
-        try{
-            memberRepository.findByUserId("ttt").orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
-        }catch (MemberException e){
-            System.out.println("exception 발생");
-            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
-        }
+    @DisplayName("회원 아이디 중복 확인")
+    void sameId() {
+        assertThat(memberRepository.existsByUserId("test")).isEqualTo(true);
     }
 }
