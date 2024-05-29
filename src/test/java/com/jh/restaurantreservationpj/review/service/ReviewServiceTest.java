@@ -8,10 +8,12 @@ import com.jh.restaurantreservationpj.restaurant.domain.Restaurant;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
+import com.jh.restaurantreservationpj.review.domain.Review;
 import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
 import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
 import com.jh.restaurantreservationpj.review.exception.ReviewErrorCode;
 import com.jh.restaurantreservationpj.review.exception.ReviewException;
+import com.jh.restaurantreservationpj.review.repository.ReviewRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,9 @@ class ReviewServiceTest {
 
     @Autowired
     private RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @Autowired
     private ReviewService reviewService;
@@ -156,6 +161,60 @@ class ReviewServiceTest {
 
         try {
             reviewService.modifyReview(review.getId(), "ttt", modifyRequest);
+        } catch (ReviewException e) {
+            assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.DIFF_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제 서비스")
+    void delete() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        Long id = reviewService.deleteReview(review.getId(), "test");
+        Review deleted = reviewRepository.findById(review.getId()).orElse(null);
+
+        assertThat(id).isEqualTo(review.getId());
+        assertThat(deleted).isNull();
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제 서지스 실패 - 없는 회원")
+    void failDelete1() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        try {
+            reviewService.deleteReview(review.getId(), "ttt");
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제 서지스 실패 - 없는 리뷰")
+    void failDelete2() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        try {
+            reviewService.deleteReview(review.getId() + 1, "test");
+        } catch (ReviewException e) {
+            assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.NOT_FOUND_REVIEW.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제 서지스 실패 - 리뷰 작성자가 아닌 경우")
+    void failDelete3() {
+        Member newMember = Member.builder()
+                .userPWD("12345")
+                .userId("ttt")
+                .build();
+        memberRepository.save(newMember);
+
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        try {
+            reviewService.deleteReview(review.getId(), "ttt");
         } catch (ReviewException e) {
             assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.DIFF_MEMBER.getMessage());
         }
