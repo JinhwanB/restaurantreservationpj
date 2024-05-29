@@ -9,6 +9,7 @@ import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
 import com.jh.restaurantreservationpj.review.domain.Review;
+import com.jh.restaurantreservationpj.review.dto.CheckReviewDto;
 import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
 import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
 import com.jh.restaurantreservationpj.review.exception.ReviewErrorCode;
@@ -217,6 +218,28 @@ class ReviewServiceTest {
             reviewService.deleteReview(review.getId(), "ttt");
         } catch (ReviewException e) {
             assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.DIFF_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("리뷰 상세 조회 서비스")
+    void detail() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        CheckReviewDto.Response checked = reviewService.checkReview(review.getId());
+
+        assertThat(checked.getContent()).isEqualTo(review.getContent());
+    }
+
+    @Test
+    @DisplayName("리뷰 상세 조회 서비스 - 없는 리뷰")
+    void failDetail() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        try {
+            reviewService.checkReview(review.getId() + 1);
+        } catch (ReviewException e) {
+            assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.NOT_FOUND_REVIEW.getMessage());
         }
     }
 }
