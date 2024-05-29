@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -241,5 +242,21 @@ class ReviewServiceTest {
         } catch (ReviewException e) {
             assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.NOT_FOUND_REVIEW.getMessage());
         }
+    }
+
+    @Test
+    @DisplayName("리뷰 전체 리스트 조회 서비스")
+    void list() {
+        CreateReviewDto.Request newCreateRequest = createRequest.toBuilder()
+                .title("제목2")
+                .content("내용2")
+                .build();
+        reviewService.createReview("test", createRequest);
+        reviewService.createReview("test", newCreateRequest);
+
+        Page<CheckReviewDto.Response> responses = reviewService.checkReviewList(pageable);
+
+        assertThat(responses.getTotalElements()).isEqualTo(2);
+        assertThat(responses.getContent().get(0).getContent()).isEqualTo("내용2");
     }
 }
