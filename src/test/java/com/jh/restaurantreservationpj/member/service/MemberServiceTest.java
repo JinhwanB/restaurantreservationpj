@@ -5,7 +5,6 @@ import com.jh.restaurantreservationpj.member.dto.MemberSignInDto;
 import com.jh.restaurantreservationpj.member.dto.MemberSignUpDto;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
-import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 class MemberServiceTest {
-
-    @Autowired
-    private MemberRepository memberRepository;
 
     @Autowired
     private MemberService memberService;
