@@ -67,4 +67,45 @@ class MemberServiceTest {
             assertThat(e.getMessage()).isEqualTo(MemberErrorCode.ALREADY_EXIST_USERID.getMessage());
         }
     }
+
+    @Test
+    @DisplayName("로그인 서비스")
+    void login() {
+        memberService.register(signUpRequest);
+        MemberSignInDto.Response login = memberService.login(signInRequest);
+
+        assertThat(login.getUserId()).isEqualTo("test");
+    }
+
+    @Test
+    @DisplayName("로그인 서비스 실패 - 없는 회원")
+    void failLogin1() {
+        memberService.register(signUpRequest);
+
+        MemberSignInDto.Request badRequest = signInRequest.toBuilder()
+                .userId("ttt")
+                .build();
+
+        try {
+            memberService.login(badRequest);
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("로그인 서비스 실패 - 비밀번호가 다름")
+    void failLogin2() {
+        memberService.register(signUpRequest);
+
+        MemberSignInDto.Request badRequest = signInRequest.toBuilder()
+                .password("12345")
+                .build();
+
+        try {
+            memberService.login(badRequest);
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_MATCH_PASSWORD.getMessage());
+        }
+    }
 }
