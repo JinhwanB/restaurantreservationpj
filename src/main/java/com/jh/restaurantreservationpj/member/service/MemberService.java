@@ -3,6 +3,7 @@ package com.jh.restaurantreservationpj.member.service;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.domain.Role;
+import com.jh.restaurantreservationpj.member.dto.MemberSignInDto;
 import com.jh.restaurantreservationpj.member.dto.MemberSignUpDto;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
@@ -60,5 +61,19 @@ public class MemberService implements UserDetailsService {
         memberRepository.save(newMember);
 
         return userId;
+    }
+
+    // 로그인 서비스
+    public Member login(MemberSignInDto.Request request) {
+        String userId = request.getUserId();
+        String password = request.getPassword();
+
+        Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
+        if (!passwordEncoder.matches(password, member.getPassword())) { // 비밀번호가 다른 경우
+            throw new MemberException(MemberErrorCode.NOT_MATCH_PASSWORD);
+        }
+
+        return member;
     }
 }
