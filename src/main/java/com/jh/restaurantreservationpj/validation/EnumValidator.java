@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.util.Arrays;
 
+// Enum 검증할 때 사용할 validator
 public class EnumValidator implements ConstraintValidator<Enum, java.lang.Enum> {
 
     @Override
