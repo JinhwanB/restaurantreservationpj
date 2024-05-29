@@ -43,22 +43,27 @@ public class MemberService implements UserDetailsService {
             throw new MemberException(MemberErrorCode.ALREADY_EXIST_USERID);
         }
 
-        List<MemberRole> memberRoleList = new ArrayList<>();
-        roles.forEach(r -> {
-            MemberRole memberRole = MemberRole.builder()
-                    .role(r)
-                    .build();
-            memberRoleList.add(memberRole);
-        });
-
         // 비밀번호 암호화 후 저장
         String encodedPassword = passwordEncoder.encode(password);
         Member newMember = Member.builder()
                 .userId(userId)
                 .userPWD(encodedPassword)
+                .build();
+        Member save = memberRepository.save(newMember);
+
+        List<MemberRole> memberRoleList = new ArrayList<>();
+        roles.forEach(r -> {
+            MemberRole memberRole = MemberRole.builder()
+                    .role(r)
+                    .member(save)
+                    .build();
+            memberRoleList.add(memberRole);
+        });
+
+        Member withRoles = save.toBuilder()
                 .memberRoles(memberRoleList)
                 .build();
-        memberRepository.save(newMember);
+        memberRepository.save(withRoles);
 
         return userId;
     }
