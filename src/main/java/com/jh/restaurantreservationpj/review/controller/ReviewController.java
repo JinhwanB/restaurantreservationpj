@@ -1,6 +1,7 @@
 package com.jh.restaurantreservationpj.review.controller;
 
 import com.jh.restaurantreservationpj.config.GlobalResponse;
+import com.jh.restaurantreservationpj.review.dto.CheckReviewDto;
 import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
 import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
 import com.jh.restaurantreservationpj.review.service.ReviewService;
@@ -47,6 +48,15 @@ public class ReviewController {
 
         String memberId = null;
         Long response = reviewService.deleteReview(id, memberId);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 리뷰 상세 조회 컨트롤러
+    @GetMapping("/review/{id}")
+    public ResponseEntity<GlobalResponse<CheckReviewDto.Response>> check(@NotBlank(message = "조회할 리뷰 pk를 입력해주세요.") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id) {
+
+        CheckReviewDto.Response response = reviewService.checkReview(id);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
