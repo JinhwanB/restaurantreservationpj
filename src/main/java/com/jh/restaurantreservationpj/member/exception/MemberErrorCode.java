@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum MemberErrorCode {
     ALREADY_EXIST_USERID(400, "아이디가 중복입니다."),
+    NOT_MATCH_PASSWORD(400, "비밀번호가 다릅니다."),
     NOT_FOUND_MEMBER(400, "회원으로 등록된 아이디가 아닙니다.");
 
     private final int status;
