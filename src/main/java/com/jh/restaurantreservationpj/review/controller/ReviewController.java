@@ -9,6 +9,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +61,14 @@ public class ReviewController {
     public ResponseEntity<GlobalResponse<CheckReviewDto.Response>> check(@NotBlank(message = "조회할 리뷰 pk를 입력해주세요.") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id) {
 
         CheckReviewDto.Response response = reviewService.checkReview(id);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 리뷰 전체 리스트 조회 컨트롤러
+    public ResponseEntity<GlobalResponse<Page<CheckReviewDto.Response>>> list(@PageableDefault(sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<CheckReviewDto.Response> response = reviewService.checkReviewList(pageable);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
