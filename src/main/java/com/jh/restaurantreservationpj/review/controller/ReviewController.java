@@ -66,6 +66,7 @@ public class ReviewController {
     }
 
     // 리뷰 전체 리스트 조회 컨트롤러
+    @GetMapping
     public ResponseEntity<GlobalResponse<Page<CheckReviewDto.Response>>> list(@PageableDefault(sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<CheckReviewDto.Response> response = reviewService.checkReviewList(pageable);
