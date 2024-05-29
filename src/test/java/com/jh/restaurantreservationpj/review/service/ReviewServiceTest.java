@@ -10,6 +10,8 @@ import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
 import com.jh.restaurantreservationpj.review.dto.CreateReviewDto;
 import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
+import com.jh.restaurantreservationpj.review.exception.ReviewErrorCode;
+import com.jh.restaurantreservationpj.review.exception.ReviewException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -104,6 +106,58 @@ class ReviewServiceTest {
             reviewService.createReview("test", badRequest);
         } catch (RestaurantException e) {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 서비스")
+    void modify() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        ModifyReviewDto.Response modifyReview = reviewService.modifyReview(review.getId(), "test", modifyRequest);
+
+        assertThat(modifyReview.getContent()).isEqualTo("내용2");
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 서비스 실패 - 없는 리뷰")
+    void failModify1() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        try {
+            reviewService.modifyReview(review.getId() + 1, "test", modifyRequest);
+        } catch (ReviewException e) {
+            assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.NOT_FOUND_REVIEW.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 서비스 실패 - 없는 회원")
+    void failModify2() {
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        try {
+            reviewService.modifyReview(review.getId(), "ttt", modifyRequest);
+        } catch (MemberException e) {
+            assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 서비스 실패 - 리뷰 작성자가 아닌 경우")
+    void failModify3() {
+        Member newMember = Member.builder()
+                .userId("ttt")
+                .userPWD("12345")
+                .build();
+        memberRepository.save(newMember);
+
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
+
+        try {
+            reviewService.modifyReview(review.getId(), "ttt", modifyRequest);
+        } catch (ReviewException e) {
+            assertThat(e.getMessage()).isEqualTo(ReviewErrorCode.DIFF_MEMBER.getMessage());
         }
     }
 }
