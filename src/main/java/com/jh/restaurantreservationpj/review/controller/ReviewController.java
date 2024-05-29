@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ public class ReviewController {
 
     // 리뷰 생성 컨트롤러
     @PostMapping("/review")
+    @PreAuthorize("hasRole('WRITE')")
     public ResponseEntity<GlobalResponse<CreateReviewDto.Response>> create(@Valid @RequestBody CreateReviewDto.Request request) {
 
         String memberId = null;
@@ -38,6 +40,7 @@ public class ReviewController {
 
     // 리뷰 수정 컨트롤러
     @PutMapping("/review/{id}")
+    @PreAuthorize("hasRole('WRITE')")
     public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@NotBlank(message = "수정할 리뷰 pk를 입력해주세요") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request) {
 
         String memberId = null;
@@ -48,6 +51,7 @@ public class ReviewController {
 
     // 리뷰 삭제 컨트롤러
     @DeleteMapping("/review/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WRITE')")
     public ResponseEntity<GlobalResponse<Long>> delete(@NotBlank(message = "삭제할 리뷰 pk를 입력해주세요.") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id) {
 
         String memberId = null;

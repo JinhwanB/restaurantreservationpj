@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,7 @@ public class RestaurantController {
      * 매장 등록 컨트롤러
      */
     @PostMapping("/restaurant")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalResponse<CreateRestaurantDto.Response>> register(@Valid @RequestBody CreateRestaurantDto.Request request) {
         // 오픈시간과 마감시간 유효성 검증
         String openTime = request.getOpenTime() != null ? request.getOpenTime().trim() : null;
@@ -44,6 +46,7 @@ public class RestaurantController {
 
     // 매장 수정 컨트롤러
     @PutMapping("/restaurant/{restaurantName}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalResponse<CheckRestaurantDto.Response>> modify(@PathVariable @NotBlank(message = "매장 이름은 필수로 입력하여야 합니다.") String restaurantName, @Valid @RequestBody ModifiedRestaurantDto.Request request) {
         String openTime = request.getOpenTime() != null ? request.getOpenTime().trim() : null;
         String closeTime = request.getCloseTime() != null ? request.getCloseTime().trim() : null;
@@ -56,6 +59,7 @@ public class RestaurantController {
 
     // 매장 삭제 컨트롤러
     @DeleteMapping("/restaurant")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalResponse<String>> delete(@Valid @RequestBody DeleteRestaurantDto.Request request) {
         String deletedRestaurant = restaurantService.deleteRestaurant(request);
 
