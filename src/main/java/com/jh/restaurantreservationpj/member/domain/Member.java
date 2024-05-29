@@ -1,6 +1,7 @@
 package com.jh.restaurantreservationpj.member.domain;
 
 import com.jh.restaurantreservationpj.config.BaseTimeEntity;
+import com.jh.restaurantreservationpj.member.dto.MemberSignInDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -78,5 +79,15 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @Override
     public boolean isEnabled() {
         return false;
+    }
+
+    // Entity -> LoginResponse
+    public MemberSignInDto.Response toLoginResponse() {
+        return MemberSignInDto.Response.builder()
+                .userId(userId)
+                .roles(memberRoles.stream()
+                        .map(r -> r.getRole().name())
+                        .toList())
+                .build();
     }
 }
