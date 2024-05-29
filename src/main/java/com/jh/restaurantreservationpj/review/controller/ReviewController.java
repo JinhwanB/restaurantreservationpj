@@ -33,10 +33,20 @@ public class ReviewController {
 
     // 리뷰 수정 컨트롤러
     @PutMapping("/review/{id}")
-    public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@NotBlank(message = "리뷰 pk를 입력해주세요") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request) {
+    public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@NotBlank(message = "수정할 리뷰 pk를 입력해주세요") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request) {
 
         String memberId = null;
         ModifyReviewDto.Response response = reviewService.modifyReview(id, memberId, request);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
+    }
+
+    // 리뷰 삭제 컨트롤러
+    @DeleteMapping("/review/{id}")
+    public ResponseEntity<GlobalResponse<Long>> delete(@NotBlank(message = "삭제할 리뷰 pk를 입력해주세요.") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id) {
+
+        String memberId = null;
+        Long response = reviewService.deleteReview(id, memberId);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
