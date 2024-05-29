@@ -34,6 +34,7 @@ public class Member extends BaseTimeEntity implements UserDetails {
     private String userPWD; // 비밀번호
 
     @OneToMany(cascade = CascadeType.ALL)
+    @Column(nullable = false)
     private List<MemberRole> memberRoles; // 권한
 
     @Column
