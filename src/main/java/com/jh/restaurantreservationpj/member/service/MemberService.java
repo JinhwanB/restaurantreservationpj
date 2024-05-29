@@ -64,7 +64,7 @@ public class MemberService implements UserDetailsService {
     }
 
     // 로그인 서비스
-    public Member login(MemberSignInDto.Request request) {
+    public MemberSignInDto.Response login(MemberSignInDto.Request request) {
         String userId = request.getUserId();
         String password = request.getPassword();
 
@@ -74,6 +74,6 @@ public class MemberService implements UserDetailsService {
             throw new MemberException(MemberErrorCode.NOT_MATCH_PASSWORD);
         }
 
-        return member;
+        return member.toLoginResponse();
     }
 }
