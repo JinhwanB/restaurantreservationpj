@@ -27,6 +27,9 @@ spring:
       enabled: true
       path: /h2-console
 
+  jwt:
+    secret: c3ByaW5nLWJvb3QtcmVzdGF1cmFudC1yZXNlcnZhdGlvbi1wcm9qZWN0LXNlY3JldC1rZXkK
+
 logging:
   level:
     org:
