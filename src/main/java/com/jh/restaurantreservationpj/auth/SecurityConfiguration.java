@@ -41,7 +41,8 @@ public class SecurityConfiguration {
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
+                        exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()).accessDeniedHandler(new JwtAuthDeniedHandler())
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(
                         headersConfigurer ->
