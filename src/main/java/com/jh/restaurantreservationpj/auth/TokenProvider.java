@@ -2,6 +2,7 @@ package com.jh.restaurantreservationpj.auth;
 
 import com.jh.restaurantreservationpj.member.service.MemberService;
 import io.jsonwebtoken.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
@@ -22,6 +24,8 @@ public class TokenProvider {
 
     private static final String KEY_ROLES = "roles";
     private static final long TOKEN_EXPIRE_TIME = 1000 * 60 * 60; // 1hour
+    private static final String TOKEN_HEADER = "Authorization";
+    private static final String TOKEN_PREFIX = "Bearer ";
 
     private final MemberService memberService;
 
@@ -55,6 +59,18 @@ public class TokenProvider {
     // 유저 아이디 가져오기
     public String getUserName(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    // 회원 아이디가 필요한 컨트롤러에서 사용할 공통 메소드
+    // 헤더 정보의 토큰을 가져온다.
+    public String resolveTokenFromRequest(HttpServletRequest request) {
+        String token = request.getHeader(TOKEN_HEADER);
+
+        if (!ObjectUtils.isEmpty(token) && token.startsWith(TOKEN_PREFIX)) {
+            return token.substring(TOKEN_PREFIX.length());
+        }
+
+        return null;
     }
 
     // 토큰 검증
