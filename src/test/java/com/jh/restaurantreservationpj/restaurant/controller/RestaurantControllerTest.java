@@ -6,7 +6,6 @@ import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.domain.Role;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
-import com.jh.restaurantreservationpj.restaurant.dto.DeleteRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.ModifiedRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.service.RestaurantService;

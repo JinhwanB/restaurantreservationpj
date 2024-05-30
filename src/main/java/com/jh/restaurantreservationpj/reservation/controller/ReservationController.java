@@ -1,8 +1,10 @@
 package com.jh.restaurantreservationpj.reservation.controller;
 
+import com.jh.restaurantreservationpj.auth.TokenProvider;
 import com.jh.restaurantreservationpj.config.GlobalResponse;
 import com.jh.restaurantreservationpj.reservation.dto.*;
 import com.jh.restaurantreservationpj.reservation.service.ReservationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -20,16 +22,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/reservations")
 @RequiredArgsConstructor
 @Validated
-// todo: 헤더 정보의 토큰을 통해 회원 아이디를 가져오는 로직 필요
 public class ReservationController {
 
     private final ReservationService reservationService;
+    private final TokenProvider tokenProvider;
 
     // 예약 생성 컨트롤러
     @PostMapping("/reservation")
     @PreAuthorize("hasRole('READ')")
-    public ResponseEntity<GlobalResponse<CreateReservationDto.Response>> create(@Valid @RequestBody CreateReservationDto.Request request) {
-        String memberId = null;
+    public ResponseEntity<GlobalResponse<CreateReservationDto.Response>> create(@Valid @RequestBody CreateReservationDto.Request request, HttpServletRequest servletRequest) {
+        String memberId = tokenProvider.getUserId(servletRequest);
 
         CreateReservationDto.Response response = reservationService.createReservation(memberId, request);
 
@@ -39,8 +41,8 @@ public class ReservationController {
     // 회원이 예약 취소하는 컨트롤러
     @DeleteMapping("/reservation")
     @PreAuthorize("hasRole('READ')")
-    public ResponseEntity<GlobalResponse<String>> cancel(@Valid @RequestBody CancelReservationDto.Request request) {
-        String memberId = null;
+    public ResponseEntity<GlobalResponse<String>> cancel(@Valid @RequestBody CancelReservationDto.Request request, HttpServletRequest servletRequest) {
+        String memberId = tokenProvider.getUserId(servletRequest);
 
         String response = reservationService.cancelReservation(memberId, request);
 
@@ -50,8 +52,8 @@ public class ReservationController {
     // 예약 승인 컨트롤러
     @PutMapping("/reservation/{reservationNumber}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<String>> accept(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리의 숫자입니다.") @PathVariable String reservationNumber) {
-        String managerId = null;
+    public ResponseEntity<GlobalResponse<String>> accept(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리의 숫자입니다.") @PathVariable String reservationNumber, HttpServletRequest servletRequest) {
+        String managerId = tokenProvider.getUserId(servletRequest);
 
         String response = reservationService.acceptReservation(managerId, reservationNumber);
 
@@ -61,8 +63,8 @@ public class ReservationController {
     // 예약 거절 컨트롤러
     @PutMapping("/reservation")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<String>> deny(@Valid @RequestBody DenyReservationDto.Request request) {
-        String managerId = null;
+    public ResponseEntity<GlobalResponse<String>> deny(@Valid @RequestBody DenyReservationDto.Request request, HttpServletRequest servletRequest) {
+        String managerId = tokenProvider.getUserId(servletRequest);
 
         String response = reservationService.denyReservation(managerId, request);
 
@@ -72,8 +74,8 @@ public class ReservationController {
     // 방문 인증 컨트롤러
     @PutMapping("/reservation/visit")
     @PreAuthorize("hasRole('READ')")
-    public ResponseEntity<GlobalResponse<String>> visit(@Valid @RequestBody UseReservationDto.Request request) {
-        String memberId = null;
+    public ResponseEntity<GlobalResponse<String>> visit(@Valid @RequestBody UseReservationDto.Request request, HttpServletRequest servletRequest) {
+        String memberId = tokenProvider.getUserId(servletRequest);
 
         String response = reservationService.useReservation(memberId, request);
 
@@ -101,8 +103,8 @@ public class ReservationController {
     // 회원이 예약 목록을 조회하는 컨트롤러
     @GetMapping
     @PreAuthorize("hasRole('READ')")
-    public ResponseEntity<GlobalResponse<Page<CheckForMemberReservationDto.Response>>> checkForMember(@PageableDefault(sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable) {
-        String memberId = null;
+    public ResponseEntity<GlobalResponse<Page<CheckForMemberReservationDto.Response>>> checkForMember(@PageableDefault(sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest servletRequest) {
+        String memberId = tokenProvider.getUserId(servletRequest);
 
         Page<CheckForMemberReservationDto.Response> response = reservationService.checkForMemberReservation(memberId, pageable);
 

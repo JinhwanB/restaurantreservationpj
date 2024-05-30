@@ -11,10 +11,7 @@ public class CreateRestaurantDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    public static class Request{
-
-        @NotBlank(message = "회원 아이디는 필수값입니다.")
-        private String userId; // 회원 아이디
+    public static class Request {
 
         @NotBlank(message = "매장명은 필수입니다.")
         private String name; // 매장명
@@ -35,7 +32,7 @@ public class CreateRestaurantDto {
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
     @Builder(toBuilder = true)
-    public static class Response{
+    public static class Response {
 
         private String name;
     }

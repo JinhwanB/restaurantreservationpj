@@ -1,13 +1,14 @@
 package com.jh.restaurantreservationpj.restaurant.controller;
 
+import com.jh.restaurantreservationpj.auth.TokenProvider;
 import com.jh.restaurantreservationpj.config.GlobalResponse;
 import com.jh.restaurantreservationpj.restaurant.dto.CheckRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
-import com.jh.restaurantreservationpj.restaurant.dto.DeleteRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.ModifiedRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.service.RestaurantService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -27,19 +28,22 @@ import org.springframework.web.bind.annotation.*;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final TokenProvider tokenProvider;
 
     /**
      * 매장 등록 컨트롤러
      */
     @PostMapping("/restaurant")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<CreateRestaurantDto.Response>> register(@Valid @RequestBody CreateRestaurantDto.Request request) {
+    public ResponseEntity<GlobalResponse<CreateRestaurantDto.Response>> register(@Valid @RequestBody CreateRestaurantDto.Request request, HttpServletRequest servletRequest) {
+        String userId = tokenProvider.getUserId(servletRequest);
+
         // 오픈시간과 마감시간 유효성 검증
         String openTime = request.getOpenTime() != null ? request.getOpenTime().trim() : null;
         String closeTime = request.getCloseTime() != null ? request.getCloseTime().trim() : null;
         validOfOpenTimeAndCloseTime(openTime, closeTime);
 
-        CreateRestaurantDto.Response response = restaurantService.createRestaurant(request);
+        CreateRestaurantDto.Response response = restaurantService.createRestaurant(userId, request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
@@ -47,21 +51,24 @@ public class RestaurantController {
     // 매장 수정 컨트롤러
     @PutMapping("/restaurant/{restaurantName}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<CheckRestaurantDto.Response>> modify(@PathVariable @NotBlank(message = "매장 이름은 필수로 입력하여야 합니다.") String restaurantName, @Valid @RequestBody ModifiedRestaurantDto.Request request) {
+    public ResponseEntity<GlobalResponse<CheckRestaurantDto.Response>> modify(@PathVariable @NotBlank(message = "매장 이름은 필수로 입력하여야 합니다.") String restaurantName, @Valid @RequestBody ModifiedRestaurantDto.Request request, HttpServletRequest servletRequest) {
+        String userId = tokenProvider.getUserId(servletRequest);
+
         String openTime = request.getOpenTime() != null ? request.getOpenTime().trim() : null;
         String closeTime = request.getCloseTime() != null ? request.getCloseTime().trim() : null;
         validOfOpenTimeAndCloseTime(openTime, closeTime); // 오픈시간과 마감시간 유효성 검사
 
-        CheckRestaurantDto.Response response = restaurantService.modifyRestaurant(restaurantName, request);
+        CheckRestaurantDto.Response response = restaurantService.modifyRestaurant(userId, restaurantName, request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
 
     // 매장 삭제 컨트롤러
-    @DeleteMapping("/restaurant")
+    @DeleteMapping("/restaurant/{restaurantName}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<String>> delete(@Valid @RequestBody DeleteRestaurantDto.Request request) {
-        String deletedRestaurant = restaurantService.deleteRestaurant(request);
+    public ResponseEntity<GlobalResponse<String>> delete(@NotBlank(message = "매장 이름을 입력해주세요.") @PathVariable String restaurantName, HttpServletRequest servletRequest) {
+        String userId = tokenProvider.getUserId(servletRequest);
+        String deletedRestaurant = restaurantService.deleteRestaurant(userId, restaurantName);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(deletedRestaurant));
     }
