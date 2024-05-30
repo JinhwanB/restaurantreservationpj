@@ -15,7 +15,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private static final String NOT_AUTH = "권한이 없습니다. 로그인 및 권한을 확인해주세요.";
+    private static final String NOT_LOGIN = "로그인이 필요합니다.";
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
@@ -23,14 +23,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     }
 
     private void setResponse(HttpServletResponse response) throws IOException {
-        log.error("인증 에러");
+        log.error("로그인 에러");
 
-        response.setStatus(403);
+        response.setStatus(401);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("utf-8");
 
         ObjectMapper objectMapper = new ObjectMapper();
-        GlobalResponse<Object> result = GlobalResponse.toGlobalResponseFail(403, NOT_AUTH);
+        GlobalResponse<Object> result = GlobalResponse.toGlobalResponseFail(401, NOT_LOGIN);
 
         response.getWriter().write(objectMapper.writeValueAsString(result));
     }
