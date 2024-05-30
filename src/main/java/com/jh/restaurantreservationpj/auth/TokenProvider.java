@@ -61,7 +61,6 @@ public class TokenProvider {
         return parseClaims(token).getSubject();
     }
 
-    // 회원 아이디가 필요한 컨트롤러에서 사용할 공통 메소드
     // 헤더 정보의 토큰을 가져온다.
     public String resolveTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader(TOKEN_HEADER);
@@ -71,6 +70,13 @@ public class TokenProvider {
         }
 
         return null;
+    }
+
+    // 컨트롤러에서 사용할 메소드
+    // 토큰을 통해 회원 아이디를 가져온다.
+    public String getUserId(HttpServletRequest request) {
+        String token = resolveTokenFromRequest(request);
+        return getUserName(token);
     }
 
     // 토큰 검증
