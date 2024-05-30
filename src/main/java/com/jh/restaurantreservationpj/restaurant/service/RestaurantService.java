@@ -59,8 +59,14 @@ public class RestaurantService {
 
         String userId = request.getUserId().trim();
         String manager = restaurant.getManager().getUserId();
+        String modifiedName = request.getName().trim();
+
         if (!userId.equals(manager)) { // 매장을 관리하는 아이디와 일치하는지 확인
             throw new RestaurantException(RestaurantErrorCode.DIFF_MANAGER);
+        }
+
+        if (restaurantRepository.existsByName(modifiedName)) {
+            throw new RestaurantException(RestaurantErrorCode.ALREADY_EXIST_NAME);
         }
 
         // 수정 내용으로 변경
