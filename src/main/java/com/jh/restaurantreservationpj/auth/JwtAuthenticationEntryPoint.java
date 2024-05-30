@@ -15,7 +15,7 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private static final String NOT_AUTH = "인증 정보가 없습니다.";
+    private static final String NOT_AUTH = "권한이 없습니다. 로그인 및 권한을 확인해주세요.";
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
