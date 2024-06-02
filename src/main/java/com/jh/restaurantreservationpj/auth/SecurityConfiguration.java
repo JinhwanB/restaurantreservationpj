@@ -34,7 +34,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/restaurants/search").permitAll()
                                 .requestMatchers("/restaurants/restaurant/{restaurantName}").permitAll()
-                                .requestMatchers("/reviews/review/{id}").permitAll()
+                                .requestMatchers("/reviews/search/**").permitAll()
                                 .requestMatchers("/reviews").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/error/**").permitAll()
