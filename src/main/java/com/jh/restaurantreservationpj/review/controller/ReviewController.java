@@ -8,7 +8,6 @@ import com.jh.restaurantreservationpj.review.dto.ModifyReviewDto;
 import com.jh.restaurantreservationpj.review.service.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,7 +42,7 @@ public class ReviewController {
     // 리뷰 수정 컨트롤러
     @PutMapping("/review/{id}")
     @PreAuthorize("hasRole('WRITE')")
-    public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@NotBlank(message = "수정할 리뷰 pk를 입력해주세요") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request, HttpServletRequest servletRequest) {
 
         String memberId = tokenProvider.getUserId(servletRequest);
         ModifyReviewDto.Response response = reviewService.modifyReview(id, memberId, request);
@@ -54,7 +53,7 @@ public class ReviewController {
     // 리뷰 삭제 컨트롤러
     @DeleteMapping("/review/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'WRITE')")
-    public ResponseEntity<GlobalResponse<Long>> delete(@NotBlank(message = "삭제할 리뷰 pk를 입력해주세요.") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<Long>> delete(@Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, HttpServletRequest servletRequest) {
 
         String memberId = tokenProvider.getUserId(servletRequest);
         Long response = reviewService.deleteReview(id, memberId);
@@ -64,7 +63,7 @@ public class ReviewController {
 
     // 리뷰 상세 조회 컨트롤러
     @GetMapping("/review/{id}")
-    public ResponseEntity<GlobalResponse<CheckReviewDto.Response>> check(@NotBlank(message = "조회할 리뷰 pk를 입력해주세요.") @Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id) {
+    public ResponseEntity<GlobalResponse<CheckReviewDto.Response>> check(@Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id) {
 
         CheckReviewDto.Response response = reviewService.checkReview(id);
 
