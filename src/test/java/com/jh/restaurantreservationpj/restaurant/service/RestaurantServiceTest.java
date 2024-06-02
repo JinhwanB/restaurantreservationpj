@@ -1,9 +1,5 @@
 package com.jh.restaurantreservationpj.restaurant.service;
 
-import com.jh.restaurantreservationpj.member.domain.Member;
-import com.jh.restaurantreservationpj.member.domain.MemberRole;
-import com.jh.restaurantreservationpj.member.domain.Role;
-import com.jh.restaurantreservationpj.member.repository.MemberRepository;
 import com.jh.restaurantreservationpj.restaurant.dto.CheckRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.CreateRestaurantDto;
 import com.jh.restaurantreservationpj.restaurant.dto.ModifiedRestaurantDto;
@@ -14,24 +10,26 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Transactional
+@AutoConfigureMockMvc
 class RestaurantServiceTest {
-
-    @Autowired
-    private MemberRepository memberRepository;
 
     @Autowired
     private RestaurantRepository restaurantRepository;
@@ -39,30 +37,42 @@ class RestaurantServiceTest {
     @Autowired
     private RestaurantService restaurantService;
 
+    @Autowired
+    private MockMvc mockMvc;
+
     CreateRestaurantDto.Request createRequest;
     ModifiedRestaurantDto.Request modifyRequest;
-    DeleteRestaurantDto.Request deleteRequest;
     Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"));
 
     @BeforeEach
-    void before() {
-        MemberRole memberRole = MemberRole.builder()
-                .role(Role.ROLE_ADMIN)
-                .build();
+    void before() throws Exception {
+        String managerJsonData = "{\n" +
+                "    \"userId\":\"manager\",\n" +
+                "    \"password\":\"1234\",\n" +
+                "    \"roles\":[\n" +
+                "        \"admin\"\n" +
+                "    ]\n" +
+                "}";
 
-        List<MemberRole> list = new ArrayList<>();
-        list.add(memberRole);
+        String anotherManagerJsonData = "{\n" +
+                "    \"userId\":\"manager2\",\n" +
+                "    \"password\":\"1234\",\n" +
+                "    \"roles\":[\n" +
+                "        \"admin\"\n" +
+                "    ]\n" +
+                "}";
 
-        Member member = Member.builder()
-                .userId("test")
-                .userPWD("1234")
-                .memberRoles(list)
-                .build();
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(managerJsonData))
+                .andExpect(status().isOk());
 
-        memberRepository.save(member);
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(anotherManagerJsonData))
+                .andExpect(status().isOk());
 
         createRequest = CreateRestaurantDto.Request.builder()
-                .userId("test")
                 .name("매장 이름")
                 .description("설명")
                 .openTime("08")
@@ -71,24 +81,18 @@ class RestaurantServiceTest {
                 .build();
 
         modifyRequest = ModifiedRestaurantDto.Request.builder()
-                .userId("test")
-                .name("매장 이름")
+                .name("매장")
                 .description("설명2")
                 .openTime("08")
                 .closeTime("22")
                 .totalAddress("주소")
-                .build();
-
-        deleteRequest = DeleteRestaurantDto.Request.builder()
-                .userId("test")
-                .name("매장 이름")
                 .build();
     }
 
     @Test
     @DisplayName("매장 등록 서비스")
     void create() {
-        CreateRestaurantDto.Response response = restaurantService.createRestaurant(createRequest);
+        CreateRestaurantDto.Response response = restaurantService.createRestaurant("manager", createRequest);
 
         assertThat(response.getName()).isEqualTo("매장 이름");
     }
@@ -97,8 +101,8 @@ class RestaurantServiceTest {
     @DisplayName("매장 등록 서비스 실패 - 중복된 매장명")
     void failCreate() {
         try {
-            restaurantService.createRestaurant(createRequest);
-            restaurantService.createRestaurant(createRequest);
+            restaurantService.createRestaurant("manager", createRequest);
+            restaurantService.createRestaurant("manager", createRequest);
         } catch (RestaurantException e) {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.ALREADY_EXIST_NAME.getMessage());
         }
@@ -107,8 +111,8 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 수정 서비스")
     void modify() {
-        restaurantService.createRestaurant(createRequest);
-        CheckRestaurantDto.Response response = restaurantService.modifyRestaurant("매장 이름", modifyRequest);
+        restaurantService.createRestaurant("manager", createRequest);
+        CheckRestaurantDto.Response response = restaurantService.modifyRestaurant("manager", "매장 이름", modifyRequest);
 
         assertThat(response.getDescription()).isEqualTo("설명2");
     }
@@ -116,9 +120,9 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 수정 서비스 실패 - 없는 매장")
     void failModify1() {
-        restaurantService.createRestaurant(createRequest);
+        restaurantService.createRestaurant("manager", createRequest);
         try {
-            restaurantService.modifyRestaurant("매장", modifyRequest);
+            restaurantService.modifyRestaurant("manager", "매장", modifyRequest);
         } catch (RestaurantException e) {
             assertThat(e.getRestaurantErrorCode().getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
         }
@@ -127,20 +131,36 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 수정 서비스 실패 - 매장 관리자와 아이디 다름")
     void failModify2() {
-        restaurantService.createRestaurant(createRequest);
+        restaurantService.createRestaurant("manager", createRequest);
         try {
-            restaurantService.modifyRestaurant("매장 이름", modifyRequest.toBuilder().userId("te").build());
+            restaurantService.modifyRestaurant("manager2", "매장 이름", modifyRequest);
         } catch (RestaurantException e) {
             assertThat(e.getRestaurantErrorCode().getMessage()).isEqualTo(RestaurantErrorCode.DIFF_MANAGER.getMessage());
         }
     }
 
     @Test
+    @DisplayName("매장 수정 서비스 실패 - 이미 존재하는 매장")
+    void failModify3() {
+        restaurantService.createRestaurant("manager", createRequest);
+
+        ModifiedRestaurantDto.Request badRequest = modifyRequest.toBuilder()
+                .name("매장 이름")
+                .build();
+
+        try {
+            restaurantService.modifyRestaurant("manager", "매장 이름", badRequest);
+        } catch (RestaurantException e) {
+            assertThat(e.getRestaurantErrorCode().getMessage()).isEqualTo(RestaurantErrorCode.ALREADY_EXIST_NAME.getMessage());
+        }
+    }
+
+    @Test
     @DisplayName("매장 삭제 서비스")
     void delete() {
-        restaurantService.createRestaurant(createRequest);
+        restaurantService.createRestaurant("manager", createRequest);
 
-        restaurantService.deleteRestaurant(deleteRequest);
+        restaurantService.deleteRestaurant("manager", "매장 이름");
 
         assertThat(restaurantRepository.existsByName("매장 이름")).isEqualTo(false);
     }
@@ -148,13 +168,10 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 삭제 서비스 실패 - 없는 매장")
     void failDelete1() {
-        restaurantService.createRestaurant(createRequest);
+        restaurantService.createRestaurant("manager", createRequest);
 
-        DeleteRestaurantDto.Request badRequest = deleteRequest.toBuilder()
-                .name("매장")
-                .build();
         try {
-            restaurantService.deleteRestaurant(badRequest);
+            restaurantService.deleteRestaurant("manager", "매장");
         } catch (RestaurantException e) {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
         }
@@ -163,13 +180,10 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 삭제 서비스 실패 - 매장 관리자와 아이디 다름")
     void failDelete2() {
-        restaurantService.createRestaurant(createRequest);
+        restaurantService.createRestaurant("manager", createRequest);
 
-        DeleteRestaurantDto.Request badRequest = deleteRequest.toBuilder()
-                .userId("ttt")
-                .build();
         try {
-            restaurantService.deleteRestaurant(badRequest);
+            restaurantService.deleteRestaurant("manager2", "매장 이름");
         } catch (RestaurantException e) {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.DIFF_MANAGER.getMessage());
         }
@@ -178,12 +192,12 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 검색 서비스")
     void search() {
-        restaurantService.createRestaurant(createRequest);
+        restaurantService.createRestaurant("manager", createRequest);
 
         CreateRestaurantDto.Request secondCreateRequest = createRequest.toBuilder()
                 .name("매가")
                 .build();
-        restaurantService.createRestaurant(secondCreateRequest);
+        restaurantService.createRestaurant("manager", secondCreateRequest);
 
         Page<CheckRestaurantDto.Response> searched = restaurantService.searchRestaurantName("매", pageable);
         List<CheckRestaurantDto.Response> content = searched.getContent();
@@ -196,7 +210,7 @@ class RestaurantServiceTest {
     @Test
     @DisplayName("매장 상세 조회 서비스")
     void check() {
-        restaurantService.createRestaurant(createRequest);
+        restaurantService.createRestaurant("manager", createRequest);
 
         CheckRestaurantDto.Response response = restaurantService.checkRestaurant("매장 이름");
 
