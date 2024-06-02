@@ -1,6 +1,7 @@
 package com.jh.restaurantreservationpj.review.service;
 
 import com.jh.restaurantreservationpj.member.domain.Member;
+import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
@@ -78,10 +79,20 @@ public class ReviewService {
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewException(ReviewErrorCode.NOT_FOUND_REVIEW));
+        
+        MemberRole memberRole = member.getMemberRoles().stream().filter(r -> r.getRole().getName().equals("ADMIN")).findAny().orElse(null);
+        if (memberRole == null) {
+            if (review.getMember() != member) { // 관리자가 아닐 때 리뷰를 작성한 회원이 아닌 경우
+                throw new ReviewException(ReviewErrorCode.DIFF_MEMBER);
+            }
+        }
 
-        // todo: 관리자가 아닌 경우에만 실행하도록 추가 조건 필요
-        if (review.getMember() != member) { // 관리자가 아닐 때 리뷰를 작성한 회원이 아닌 경우
-            throw new ReviewException(ReviewErrorCode.DIFF_MEMBER);
+        if (memberRole != null) {
+            Member manager = review.getRestaurant().getManager();
+
+            if (member != manager) {
+                throw new ReviewException(ReviewErrorCode.DIFF_MANAGER);
+            }
         }
 
         reviewRepository.delete(review);
