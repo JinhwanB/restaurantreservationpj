@@ -42,7 +42,7 @@ public class ReviewController {
     // 리뷰 수정 컨트롤러
     @PutMapping("/review/{id}")
     @PreAuthorize("hasRole('WRITE')")
-    public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@Positive(message = "pk에 0 또는 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request, HttpServletRequest servletRequest) {
 
         String memberId = tokenProvider.getUserId(servletRequest);
         ModifyReviewDto.Response response = reviewService.modifyReview(id, memberId, request);
@@ -53,7 +53,7 @@ public class ReviewController {
     // 리뷰 삭제 컨트롤러
     @DeleteMapping("/review/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'WRITE')")
-    public ResponseEntity<GlobalResponse<Long>> delete(@Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<Long>> delete(@Positive(message = "pk에 0 또는 음수는 허용되지 않습니다.") @PathVariable Long id, HttpServletRequest servletRequest) {
 
         String memberId = tokenProvider.getUserId(servletRequest);
         Long response = reviewService.deleteReview(id, memberId);
@@ -63,7 +63,7 @@ public class ReviewController {
 
     // 리뷰 상세 조회 컨트롤러
     @GetMapping("/review/{id}")
-    public ResponseEntity<GlobalResponse<CheckReviewDto.Response>> check(@Positive(message = "pk에 음수는 허용되지 않습니다.") @PathVariable Long id) {
+    public ResponseEntity<GlobalResponse<CheckReviewDto.Response>> check(@Positive(message = "pk에 0 또는 음수는 허용되지 않습니다.") @PathVariable Long id) {
 
         CheckReviewDto.Response response = reviewService.checkReview(id);
 
