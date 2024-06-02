@@ -19,17 +19,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Transactional
+@AutoConfigureMockMvc
 class ReviewServiceTest {
 
     @Autowired
@@ -44,29 +50,61 @@ class ReviewServiceTest {
     @Autowired
     private ReviewService reviewService;
 
+    @Autowired
+    private MockMvc mockMvc;
+
     CreateReviewDto.Request createRequest;
     ModifyReviewDto.Request modifyRequest;
     Pageable pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "regDate");
 
     @BeforeEach
-    void before() {
-        Member member = Member.builder()
-                .userPWD("1234")
-                .userId("test")
-                .build();
-        memberRepository.save(member);
+    void before() throws Exception {
+        String managerJsonData = "{\n" +
+                "    \"userId\":\"manager\",\n" +
+                "    \"password\":\"1234\",\n" +
+                "    \"roles\":[\n" +
+                "        \"admin\"\n" +
+                "    ]\n" +
+                "}";
 
-        Member manager = Member.builder()
-                .userPWD("1234")
-                .userId("manager")
-                .build();
-        Member savedManager = memberRepository.save(manager);
+        String memberJsonData = "{\n" +
+                "    \"userId\":\"test\",\n" +
+                "    \"password\":\"1234\",\n" +
+                "    \"roles\":[\n" +
+                "        \"read\", \"write\"\n" +
+                "    ]\n" +
+                "}";
+
+        String anotherMemberJsonData = "{\n" +
+                "    \"userId\":\"ttt\",\n" +
+                "    \"password\":\"1234\",\n" +
+                "    \"roles\":[\n" +
+                "        \"read\", \"write\"\n" +
+                "    ]\n" +
+                "}";
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(managerJsonData))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(memberJsonData))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(anotherMemberJsonData))
+                .andExpect(status().isOk());
+
+        Member manager = memberRepository.findByUserId("manager").orElse(null);
 
         Restaurant restaurant = Restaurant.builder()
                 .name("매장")
                 .closeTime("22")
                 .description("설명")
-                .manager(savedManager)
+                .manager(manager)
                 .totalAddress("주소")
                 .openTime("09")
                 .build();
@@ -207,12 +245,6 @@ class ReviewServiceTest {
     @Test
     @DisplayName("리뷰 삭제 서지스 실패 - 리뷰 작성자가 아닌 경우")
     void failDelete3() {
-        Member newMember = Member.builder()
-                .userPWD("12345")
-                .userId("ttt")
-                .build();
-        memberRepository.save(newMember);
-
         CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
         try {
