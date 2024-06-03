@@ -1,6 +1,8 @@
 package com.jh.restaurantreservationpj.reservation.service;
 
 import com.jh.restaurantreservationpj.member.domain.Member;
+import com.jh.restaurantreservationpj.member.domain.MemberRole;
+import com.jh.restaurantreservationpj.member.domain.Role;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
 import com.jh.restaurantreservationpj.member.repository.MemberRepository;
@@ -186,7 +188,16 @@ public class ReservationService {
                 .build();
         reservationRepository.save(visitedReservation);
 
-        // todo: 회원에게 리뷰 작성 권한 부여하는 로직 필요
+        MemberRole reviewRole = MemberRole.builder()
+                .member(member)
+                .role(Role.ROLE_WRITE)
+                .build();
+        List<MemberRole> memberRoles = member.getMemberRoles();
+        memberRoles.add(reviewRole);
+        Member withReviewRole = member.toBuilder()
+                .memberRoles(memberRoles)
+                .build();
+        memberRepository.save(withReviewRole);
 
         return reservationNumber;
     }
