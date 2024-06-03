@@ -224,7 +224,7 @@ class ReservationServiceTest {
     @DisplayName("회원이 예약을 취소하는 서비스 실패 - 예약 취소 가능 시간을 넘긴 경우")
     void failCancel7() {
         CreateReservationDto.Request newCreateRequest = createRequest.toBuilder()
-                .time("15")
+                .time("19")
                 .build();
         CreateReservationDto.Response reservation = reservationService.createReservation("test", newCreateRequest);
         String reservationNumber = reservation.getReservationNumber();
@@ -369,10 +369,11 @@ class ReservationServiceTest {
         reservationService.acceptReservation("manager", reservation.getReservationNumber());
 
         UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .userId("test")
                 .reservationNumber(reservation.getReservationNumber())
                 .restaurantName("매장")
                 .build();
-        String reservationNumber = reservationService.useReservation("test", useRequest);
+        String reservationNumber = reservationService.useReservation(useRequest);
 
         Reservation visitedReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
 
@@ -387,12 +388,13 @@ class ReservationServiceTest {
     @DisplayName("예약 방문 인증 서비스 실패 - 없는 회원")
     void failVisit1() {
         UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .userId("ttt")
                 .reservationNumber("10000000")
                 .restaurantName("매장")
                 .build();
 
         try {
-            reservationService.useReservation("ttt", useRequest);
+            reservationService.useReservation(useRequest);
         } catch (MemberException e) {
             assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
         }
@@ -402,12 +404,13 @@ class ReservationServiceTest {
     @DisplayName("예약 방문 인증 서비스 실패 - 없는 예약")
     void failVisit2() {
         UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .userId("test")
                 .reservationNumber("10000000")
                 .restaurantName("매장")
                 .build();
 
         try {
-            reservationService.useReservation("test", useRequest);
+            reservationService.useReservation(useRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
         }
@@ -435,12 +438,13 @@ class ReservationServiceTest {
         CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
 
         UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .userId("test")
                 .reservationNumber(reservation.getReservationNumber())
                 .restaurantName("매장")
                 .build();
 
         try {
-            reservationService.useReservation("test", useRequest);
+            reservationService.useReservation(useRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.IMPOSSIBLE_VISIT.getMessage());
         }
@@ -459,12 +463,13 @@ class ReservationServiceTest {
         reservationService.acceptReservation("manager", reservation.getReservationNumber());
 
         UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .userId("ttt")
                 .reservationNumber(reservation.getReservationNumber())
                 .restaurantName("매장")
                 .build();
 
         try {
-            reservationService.useReservation("ttt", useRequest);
+            reservationService.useReservation(useRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_MEMBER.getMessage());
         }
@@ -477,12 +482,13 @@ class ReservationServiceTest {
         reservationService.acceptReservation("manager", reservation.getReservationNumber());
 
         UseReservationDto.Request useRequest = UseReservationDto.Request.builder()
+                .userId("test")
                 .reservationNumber(reservation.getReservationNumber())
                 .restaurantName("매")
                 .build();
 
         try {
-            reservationService.useReservation("test", useRequest);
+            reservationService.useReservation(useRequest);
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.DIFF_RESERVATION_RESTAURANT.getMessage());
         }
