@@ -81,7 +81,7 @@ public class ReservationController {
 
     // 예약 상세 조회 컨트롤러
     @GetMapping("/reservation/search/{reservationNumber}")
-    @PreAuthorize("hasRole('READ')")
+    @PreAuthorize("hasAnyRole('READ', 'ADMIN')")
     public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> check(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리 숫자입니다.") @PathVariable String reservationNumber) {
         CheckForMemberReservationDto.Response response = reservationService.checkReservation(reservationNumber);
 
