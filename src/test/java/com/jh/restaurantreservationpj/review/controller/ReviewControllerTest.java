@@ -233,9 +233,9 @@ class ReviewControllerTest {
     @Test
     @DisplayName("리뷰 수정 컨트롤러")
     void modify() throws Exception {
-        reviewService.createReview("test", createRequest);
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
-        mockMvc.perform(put("/reviews/review/1")
+        mockMvc.perform(put("/reviews/review/" + review.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(modifyRequest))
                         .header("Authorization", "Bearer " + userToken))
@@ -332,9 +332,9 @@ class ReviewControllerTest {
     @Test
     @DisplayName("회원이 리뷰 삭제 컨트롤러")
     void del() throws Exception {
-        reviewService.createReview("test", createRequest);
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
-        mockMvc.perform(delete("/reviews/review/1")
+        mockMvc.perform(delete("/reviews/review/" + review.getId())
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
@@ -344,9 +344,9 @@ class ReviewControllerTest {
     @Test
     @DisplayName("관리자가 리뷰 삭제 컨트롤러")
     void del2() throws Exception {
-        reviewService.createReview("test", createRequest);
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
-        mockMvc.perform(delete("/reviews/review/1")
+        mockMvc.perform(delete("/reviews/review/" + review.getId())
                         .header("Authorization", "Bearer " + managerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
@@ -399,9 +399,9 @@ class ReviewControllerTest {
     @Test
     @DisplayName("리뷰 상세 조회 컨트롤러")
     void detail() throws Exception {
-        reviewService.createReview("test", createRequest);
+        CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
-        mockMvc.perform(get("/reviews/review/1"))
+        mockMvc.perform(get("/reviews/search/" + review.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.data").exists());
