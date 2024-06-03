@@ -107,7 +107,7 @@ class ReservationServiceTest {
     @DisplayName("회원이 예약 생성하는 서비스")
     void createReservation() {
         CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
-        
+
         assertThat(reservation.getReservationMemberId()).isEqualTo("test");
     }
 
@@ -376,6 +376,9 @@ class ReservationServiceTest {
 
         Reservation visitedReservation = reservationRepository.findByReservationNumber(reservationNumber).orElse(null);
 
+        Member member = memberRepository.findByUserId("test").orElse(null);
+
+        assertThat(member.getMemberRoles().stream().filter(r -> r.getRole().getName().equals("WRITE")).findFirst().orElse(null)).isNotNull();
         assertThat(reservationNumber).isEqualTo(reservation.getReservationNumber());
         assertThat(visitedReservation.isVisit()).isEqualTo(true);
     }
