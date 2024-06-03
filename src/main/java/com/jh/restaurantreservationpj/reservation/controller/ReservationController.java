@@ -83,7 +83,7 @@ public class ReservationController {
     }
 
     // 예약 상세 조회 컨트롤러
-    @GetMapping("/reservation/{reservationNumber}")
+    @GetMapping("/reservation/search/{reservationNumber}")
     @PreAuthorize("hasRole('READ')")
     public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> check(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리 숫자입니다.") @PathVariable String reservationNumber) {
         CheckForMemberReservationDto.Response response = reservationService.checkReservation(reservationNumber);
@@ -92,7 +92,7 @@ public class ReservationController {
     }
 
     // 점장이 매장 예약 목록을 조회하는 컨트롤러
-    @GetMapping("/{restaurantName}")
+    @GetMapping("/search/{restaurantName}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GlobalResponse<Page<CheckForManagerReservationDto.Response>>> checkForManager(@NotBlank(message = "매장 이름을 입력해주세요.") @PathVariable String restaurantName, @PageableDefault(sort = "regDate", direction = Sort.Direction.ASC) Pageable pageable) {
         Page<CheckForManagerReservationDto.Response> response = reservationService.checkForManagerReservation(restaurantName.trim(), pageable);
@@ -101,7 +101,7 @@ public class ReservationController {
     }
 
     // 회원이 예약 목록을 조회하는 컨트롤러
-    @GetMapping
+    @GetMapping("/search")
     @PreAuthorize("hasRole('READ')")
     public ResponseEntity<GlobalResponse<Page<CheckForMemberReservationDto.Response>>> checkForMember(@PageableDefault(sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable, HttpServletRequest servletRequest) {
         String memberId = tokenProvider.getUserId(servletRequest);
