@@ -51,11 +51,12 @@ public class MemberService implements UserDetailsService {
                 .build();
         Member save = memberRepository.save(newMember);
 
+        // 회원 권한 저장 부분
         List<MemberRole> memberRoleList = new ArrayList<>();
         roles.forEach(r -> {
             MemberRole memberRole = MemberRole.builder()
                     .role(r)
-                    .member(save)
+                    .member(save) // 연관관계 적용
                     .build();
             memberRoleList.add(memberRole);
         });
