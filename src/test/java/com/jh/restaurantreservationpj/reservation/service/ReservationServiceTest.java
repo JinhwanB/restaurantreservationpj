@@ -335,7 +335,7 @@ class ReservationServiceTest {
 
         reservationService.createReservation("ttt", createRequest);
 
-        Page<CheckForManagerReservationDto.Response> reservationList = reservationService.checkForManagerReservation("매장", pageable);
+        Page<CheckForManagerReservationDto.Response> reservationList = reservationService.checkForManagerReservation("manager", "매장", pageable);
 
         assertThat(reservationList.getContent()).hasSize(2);
         assertThat(reservationList.getContent().get(0).getMemberId()).isEqualTo("test");
@@ -356,7 +356,7 @@ class ReservationServiceTest {
         reservationService.createReservation("ttt", createRequest);
 
         try {
-            reservationService.checkForManagerReservation("매", pageable);
+            reservationService.checkForManagerReservation("manager", "매", pageable);
         } catch (RestaurantException e) {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
         }
@@ -499,7 +499,7 @@ class ReservationServiceTest {
     void detailCheck() {
         CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
 
-        CheckForMemberReservationDto.Response response = reservationService.checkReservation(reservation.getReservationNumber());
+        CheckForMemberReservationDto.Response response = reservationService.checkReservation("test", reservation.getReservationNumber());
 
         assertThat(response.getReservationNumber()).isEqualTo(reservation.getReservationNumber());
         assertThat(response.getDetailMessage()).isEqualTo(CheckForMemberReservationDto.DetailMessage.WAIT.getMessage());
@@ -511,7 +511,7 @@ class ReservationServiceTest {
         CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
 
         try {
-            reservationService.checkReservation("10101010");
+            reservationService.checkReservation("test", "10101010");
         } catch (ReservationException e) {
             assertThat(e.getMessage()).isEqualTo(ReservationErrorCode.NOT_FOUND_RESERVATION.getMessage());
         }
