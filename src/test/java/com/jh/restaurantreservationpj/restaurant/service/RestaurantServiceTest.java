@@ -226,4 +226,14 @@ class RestaurantServiceTest {
             assertThat(e.getMessage()).isEqualTo(RestaurantErrorCode.NOT_FOUND_RESTAURANT.getMessage());
         }
     }
+
+    @Test
+    @DisplayName("매장 전체 리스트 조회 서비스")
+    void all() {
+        create();
+        
+        Page<CheckRestaurantDto.Response> all = restaurantService.all(pageable);
+
+        assertThat(all.getContent()).hasSize(1);
+    }
 }
