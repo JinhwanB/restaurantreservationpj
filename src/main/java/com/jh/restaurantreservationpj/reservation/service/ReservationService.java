@@ -204,8 +204,27 @@ public class ReservationService {
     }
 
     // 예약 상세 조회 서비스
-    public CheckForMemberReservationDto.Response checkReservation(String reservationNumber) {
+    public CheckForMemberReservationDto.Response checkReservation(String userId, String reservationNumber) {
+        Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
         Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+
+        MemberRole memberRole = member.getMemberRoles().stream() // 회원이 관리자(점장)이 아닌 경우 null
+                .filter(r -> r.getRole().getName().equals("ADMIN"))
+                .findFirst()
+                .orElse(null);
+
+        if (memberRole == null) { // 조회한 회원이 점장이 아니라면
+            if (reservation.getReservationMember() != member) { // 예약한 회원인지 확인
+                throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MEMBER);
+            }
+        }
+
+        if (memberRole != null) { // 조회한 회원이 점장이라면
+            if (reservation.getReservationRestaurant().getManager() != member) { // 예약한 매장의 점장인지 확인
+                throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MANAGER);
+            }
+        }
 
         return checkForReservation(reservation);
     }
@@ -214,8 +233,14 @@ public class ReservationService {
     // 페이징처리
     // 먼저 등록된 예약 순 정렬
     @Transactional(readOnly = true)
-    public Page<CheckForManagerReservationDto.Response> checkForManagerReservation(String restaurantName, Pageable pageable) {
+    public Page<CheckForManagerReservationDto.Response> checkForManagerReservation(String memberId, String restaurantName, Pageable pageable) {
+        Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
+
+        if (restaurant.getManager() != member) { // 조회하려는 식당이 관리자의 식당이 아닌 경우
+            throw new ReservationException(ReservationErrorCode.DIFF_RESERVATION_MANAGER);
+        }
 
         Page<Reservation> reservationList = reservationRepository.findAllByReservationRestaurantAndDelDate(restaurant, null, pageable);
         List<Reservation> content = reservationList.getContent();
