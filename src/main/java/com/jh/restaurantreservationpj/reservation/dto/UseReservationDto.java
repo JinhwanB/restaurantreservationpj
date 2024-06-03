@@ -13,6 +13,9 @@ public class UseReservationDto {
     @Builder(toBuilder = true)
     static public class Request {
 
+        @NotBlank(message = "아이디를 입력하세요.")
+        private String userId;
+        
         @NotBlank(message = "예약 번호를 입력해주세요.")
         @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리 숫자입니다.")
         private String reservationNumber; // 예약 번호
