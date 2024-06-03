@@ -113,4 +113,15 @@ public class RestaurantService {
 
         return restaurant.toCheckResponse();
     }
+
+    // 매장 전체 리스트 조회 서비스
+    public Page<CheckRestaurantDto.Response> all(Pageable pageable) {
+        Page<Restaurant> all = restaurantRepository.findAll(pageable);
+        List<Restaurant> content = all.getContent();
+        List<CheckRestaurantDto.Response> resultList = content.stream()
+                .map(Restaurant::toCheckResponse)
+                .toList();
+
+        return new PageImpl<>(resultList, pageable, resultList.size());
+    }
 }
