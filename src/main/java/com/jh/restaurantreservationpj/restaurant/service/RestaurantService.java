@@ -115,6 +115,7 @@ public class RestaurantService {
     }
 
     // 매장 전체 리스트 조회 서비스
+    @Transactional(readOnly = true)
     public Page<CheckRestaurantDto.Response> all(Pageable pageable) {
         Page<Restaurant> all = restaurantRepository.findAll(pageable);
         List<Restaurant> content = all.getContent();
