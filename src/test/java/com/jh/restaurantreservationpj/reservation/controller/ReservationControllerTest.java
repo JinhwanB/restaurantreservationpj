@@ -45,6 +45,7 @@ class ReservationControllerTest {
 
     String userToken;
     String managerToken;
+    String reservationNumber;
     CreateReservationDto.Request createRequest;
     CancelReservationDto.Request cancelRequest;
     DenyReservationDto.Request denyRequest;
@@ -118,11 +119,12 @@ class ReservationControllerTest {
         restaurantService.createRestaurant("manager", restaurantCreateRequest);
 
         createRequest = CreateReservationDto.Request.builder()
-                .time("19")
+                .time("22")
                 .restaurantName("매장")
                 .build();
 
         CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
+        reservationNumber = reservation.getReservationNumber();
 
         cancelRequest = CancelReservationDto.Request.builder()
                 .reservationNumber(reservation.getReservationNumber())
@@ -325,7 +327,7 @@ class ReservationControllerTest {
     @Test
     @DisplayName("예약 승인 컨트롤러")
     void accept() throws Exception {
-        mockMvc.perform(put("/reservations/reservation/10000000")
+        mockMvc.perform(put("/reservations/reservation/" + reservationNumber)
                         .header("Authorization", "Bearer " + managerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
@@ -459,7 +461,7 @@ class ReservationControllerTest {
     @Test
     @DisplayName("방문 인증 컨트롤러")
     void visit() throws Exception {
-        reservationService.acceptReservation("manager", "10000000");
+        reservationService.acceptReservation("manager", reservationNumber);
 
         mockMvc.perform(put("/reservations/reservation/visit")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -473,7 +475,7 @@ class ReservationControllerTest {
     @Test
     @DisplayName("방문 인증 컨트롤러 실패 - 유효성 검증 실패1")
     void failVisit1() throws Exception {
-        reservationService.acceptReservation("manager", "10000000");
+        reservationService.acceptReservation("manager", reservationNumber);
 
         UseReservationDto.Request badRequest = useRequest.toBuilder()
                 .restaurantName("")
@@ -489,7 +491,7 @@ class ReservationControllerTest {
     @Test
     @DisplayName("방문 인증 컨트롤러 실패 - 유효성 검증 실패2")
     void failVisit2() throws Exception {
-        reservationService.acceptReservation("manager", "10000000");
+        reservationService.acceptReservation("manager", reservationNumber);
 
         UseReservationDto.Request badRequest = useRequest.toBuilder()
                 .reservationNumber("")
@@ -515,7 +517,7 @@ class ReservationControllerTest {
     @Test
     @DisplayName("방문 인증 컨트롤러 실패 - 유효성 검증 실패3")
     void failVisit3() throws Exception {
-        reservationService.acceptReservation("manager", "10000000");
+        reservationService.acceptReservation("manager", reservationNumber);
 
         UseReservationDto.Request badRequest = useRequest.toBuilder()
                 .userId("")
@@ -531,14 +533,14 @@ class ReservationControllerTest {
     @Test
     @DisplayName("예약 상세 조회 컨트롤러")
     void detail() throws Exception {
-        mockMvc.perform(get("/reservations/reservation/search/10000000")
+        mockMvc.perform(get("/reservations/reservation/search/" + reservationNumber)
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.data").exists())
                 .andDo(print());
 
-        mockMvc.perform(get("/reservations/reservation/search/10000000")
+        mockMvc.perform(get("/reservations/reservation/search/" + reservationNumber)
                         .header("Authorization", "Bearer " + managerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
