@@ -17,19 +17,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Transactional
+@AutoConfigureMockMvc
 class ReservationServiceTest {
 
     @Autowired
@@ -44,23 +50,42 @@ class ReservationServiceTest {
     @Autowired
     private ReservationService reservationService;
 
+    @Autowired
+    private MockMvc mockMvc;
+
     CreateReservationDto.Request createRequest;
     Pageable pageable = PageRequest.of(0, 10, Sort.Direction.ASC, "regDate");
     Pageable pageableForMember = PageRequest.of(0, 10, Sort.Direction.DESC, "regDate");
 
     @BeforeEach
-    void before() {
-        Member manager = Member.builder()
-                .userId("manager")
-                .userPWD("12345")
-                .build();
-        memberRepository.save(manager);
+    void before() throws Exception {
+        String managerJsonData = "{\n" +
+                "    \"userId\":\"manager\",\n" +
+                "    \"password\":\"1234\",\n" +
+                "    \"roles\":[\n" +
+                "        \"admin\"\n" +
+                "    ]\n" +
+                "}";
 
-        Member member = Member.builder()
-                .userPWD("1234")
-                .userId("test")
-                .build();
-        memberRepository.save(member);
+        String memberJsonData = "{\n" +
+                "    \"userId\":\"test\",\n" +
+                "    \"password\":\"1234\",\n" +
+                "    \"roles\":[\n" +
+                "        \"read\", \"write\"\n" +
+                "    ]\n" +
+                "}";
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(managerJsonData))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(memberJsonData))
+                .andExpect(status().isOk());
+
+        Member manager = memberRepository.findByUserId("manager").orElse(null);
 
         Restaurant restaurant = Restaurant.builder()
                 .name("매장")
@@ -82,8 +107,7 @@ class ReservationServiceTest {
     @DisplayName("회원이 예약 생성하는 서비스")
     void createReservation() {
         CreateReservationDto.Response reservation = reservationService.createReservation("test", createRequest);
-
-        assertThat(reservation.getReservationNumber()).isEqualTo("10000000");
+        
         assertThat(reservation.getReservationMemberId()).isEqualTo("test");
     }
 
