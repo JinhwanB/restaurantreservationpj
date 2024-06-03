@@ -89,6 +89,15 @@ public class RestaurantController {
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
 
+    // 매장 전체 리스트 조회 컨트롤러
+    // 매장 이름을 기준으로 오름차순 정렬
+    @GetMapping
+    public ResponseEntity<GlobalResponse<Page<CheckRestaurantDto.Response>>> allOfRestaurants(@PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<CheckRestaurantDto.Response> all = restaurantService.all(pageable);
+
+        return ResponseEntity.ok(GlobalResponse.toGlobalResponse(all));
+    }
+
     // 오픈시간과 마감시간 유효성 검증
     private static void validOfOpenTimeAndCloseTime(String openTime, String closeTime) {
         // 오픈 시간과 마감 시간은 모두 null(24시간 운영) 이거나 모두 유효한 값이 있어야 함
