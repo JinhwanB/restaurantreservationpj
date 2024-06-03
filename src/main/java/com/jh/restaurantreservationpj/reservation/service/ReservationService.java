@@ -159,11 +159,12 @@ public class ReservationService {
     }
 
     // 예약 방문 인증 서비스
-    public String useReservation(String memberId, UseReservationDto.Request request) {
+    public String useReservation(UseReservationDto.Request request) {
+        String userId = request.getUserId();
         String reservationNumber = request.getReservationNumber();
         String restaurantName = request.getRestaurantName().trim();
 
-        Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
+        Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
 
