@@ -54,7 +54,7 @@ public class ReservationService {
 
         validReservationTime(restaurant, request.getTime().trim()); // 예약 시간이 가능한 시간인지 확인
 
-        String reservationNumber = makeReservationNumber(String.valueOf(reservationNum)); // 예약 번호
+        String reservationNumber = makeReservationNumber(String.valueOf(reservationNum)); // 예약 번호 생성
 
         Reservation reservation = Reservation.builder()
                 .reservationNumber(reservationNumber)
@@ -189,6 +189,7 @@ public class ReservationService {
                 .build();
         reservationRepository.save(visitedReservation);
 
+        // 회원에게 리뷰 작성 권한 부여하는 부분
         MemberRole reviewRole = MemberRole.builder()
                 .member(member)
                 .role(Role.ROLE_WRITE)
