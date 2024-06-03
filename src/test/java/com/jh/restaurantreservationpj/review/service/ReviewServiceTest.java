@@ -182,7 +182,7 @@ class ReviewServiceTest {
         CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
         try {
-            reviewService.modifyReview(review.getId(), "ttt", modifyRequest);
+            reviewService.modifyReview(review.getId(), "taco", modifyRequest);
         } catch (MemberException e) {
             assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
         }
@@ -191,12 +191,6 @@ class ReviewServiceTest {
     @Test
     @DisplayName("리뷰 수정 서비스 실패 - 리뷰 작성자가 아닌 경우")
     void failModify3() {
-        Member newMember = Member.builder()
-                .userId("ttt")
-                .userPWD("12345")
-                .build();
-        memberRepository.save(newMember);
-
         CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
         try {
@@ -224,7 +218,7 @@ class ReviewServiceTest {
         CreateReviewDto.Response review = reviewService.createReview("test", createRequest);
 
         try {
-            reviewService.deleteReview(review.getId(), "ttt");
+            reviewService.deleteReview(review.getId(), "taco");
         } catch (MemberException e) {
             assertThat(e.getMessage()).isEqualTo(MemberErrorCode.NOT_FOUND_MEMBER.getMessage());
         }
