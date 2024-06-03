@@ -32,11 +32,11 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorizeRequest ->
                         authorizeRequest
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/restaurants").permitAll()
                                 .requestMatchers("/restaurants/search").permitAll()
                                 .requestMatchers("/restaurants/restaurant/{restaurantName}").permitAll()
                                 .requestMatchers("/reviews/search/**").permitAll()
                                 .requestMatchers("/reservations/reservation/visit").permitAll()
-                                .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/error/**").permitAll()
                                 .anyRequest().authenticated()
                 )
