@@ -37,6 +37,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/reviews/search/**").permitAll()
                                 .requestMatchers("/reviews").permitAll()
                                 .requestMatchers("/reservations/search/**").permitAll()
+                                .requestMatchers("/reservations/reservation/visit").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/error/**").permitAll()
                                 .anyRequest().authenticated()
