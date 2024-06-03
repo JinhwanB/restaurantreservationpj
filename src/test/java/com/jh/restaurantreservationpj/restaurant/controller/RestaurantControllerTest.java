@@ -371,4 +371,13 @@ class RestaurantControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$[0].status").value(400));
     }
+
+    @Test
+    @DisplayName("매장 전체 리스트 조회 컨트롤러")
+    void all() throws Exception {
+        mockMvc.perform(get("/restaurants"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data").exists());
+    }
 }
