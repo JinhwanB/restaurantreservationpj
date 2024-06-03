@@ -73,11 +73,8 @@ public class ReservationController {
 
     // 방문 인증 컨트롤러
     @PutMapping("/reservation/visit")
-    @PreAuthorize("hasRole('READ')")
-    public ResponseEntity<GlobalResponse<String>> visit(@Valid @RequestBody UseReservationDto.Request request, HttpServletRequest servletRequest) {
-        String memberId = tokenProvider.getUserId(servletRequest);
-
-        String response = reservationService.useReservation(memberId, request);
+    public ResponseEntity<GlobalResponse<String>> visit(@Valid @RequestBody UseReservationDto.Request request) {
+        String response = reservationService.useReservation(request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
