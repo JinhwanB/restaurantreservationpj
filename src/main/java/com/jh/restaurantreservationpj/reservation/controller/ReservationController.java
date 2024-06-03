@@ -82,8 +82,10 @@ public class ReservationController {
     // 예약 상세 조회 컨트롤러
     @GetMapping("/reservation/search/{reservationNumber}")
     @PreAuthorize("hasAnyRole('READ', 'ADMIN')")
-    public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> check(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리 숫자입니다.") @PathVariable String reservationNumber) {
-        CheckForMemberReservationDto.Response response = reservationService.checkReservation(reservationNumber);
+    public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> check(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리 숫자입니다.") @PathVariable String reservationNumber, HttpServletRequest servletRequest) {
+        String memberId = tokenProvider.getUserId(servletRequest);
+
+        CheckForMemberReservationDto.Response response = reservationService.checkReservation(memberId, reservationNumber);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
@@ -91,8 +93,10 @@ public class ReservationController {
     // 점장이 매장 예약 목록을 조회하는 컨트롤러
     @GetMapping("/search/{restaurantName}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<Page<CheckForManagerReservationDto.Response>>> checkForManager(@NotBlank(message = "매장 이름을 입력해주세요.") @PathVariable String restaurantName, @PageableDefault(sort = "regDate", direction = Sort.Direction.ASC) Pageable pageable) {
-        Page<CheckForManagerReservationDto.Response> response = reservationService.checkForManagerReservation(restaurantName.trim(), pageable);
+    public ResponseEntity<GlobalResponse<Page<CheckForManagerReservationDto.Response>>> checkForManager(@NotBlank(message = "매장 이름을 입력해주세요.") @PathVariable String restaurantName, @PageableDefault(sort = "regDate", direction = Sort.Direction.ASC) Pageable pageable, HttpServletRequest servletRequest) {
+        String memberId = tokenProvider.getUserId(servletRequest);
+
+        Page<CheckForManagerReservationDto.Response> response = reservationService.checkForManagerReservation(memberId, restaurantName.trim(), pageable);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
