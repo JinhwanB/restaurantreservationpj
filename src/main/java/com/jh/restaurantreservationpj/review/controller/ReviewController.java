@@ -42,10 +42,10 @@ public class ReviewController {
     // 리뷰 수정 컨트롤러
     @PutMapping("/review/{id}")
     @PreAuthorize("hasRole('WRITE')")
-    public ResponseEntity<GlobalResponse<ModifyReviewDto.Response>> modify(@Positive(message = "pk에 0 또는 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<CheckReviewDto.Response>> modify(@Positive(message = "pk에 0 또는 음수는 허용되지 않습니다.") @PathVariable Long id, @Valid @RequestBody ModifyReviewDto.Request request, HttpServletRequest servletRequest) {
 
         String memberId = tokenProvider.getUserId(servletRequest);
-        ModifyReviewDto.Response response = reviewService.modifyReview(id, memberId, request);
+        CheckReviewDto.Response response = reviewService.modifyReview(id, memberId, request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
