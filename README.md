@@ -147,7 +147,7 @@
 
 ✅ DELETE - reservations/reservation (예약 취소)
 
-- 예약 번호와 취소 사유를 RequestBody로 받고 최소된 예약 번호를 반환
+- 예약 번호와 취소 사유를 RequestBody로 받고 최소된 예약 상세 정보를 반환
 - 예약 시간 1시간 전까지 취소 가능
 - <details>
     <summary>에러</summary>
@@ -164,7 +164,7 @@
 
 ✅ PUT - reservations/reservation/{reservationNumber} (예약 승인)
 
-- 예약 번호를 PathVariable로 받고 승인된 예약 번호를 반환
+- 예약 번호를 PathVariable로 받고 예약 상세 정보를 반환
 - <details>
     <summary>에러</summary>
 
@@ -178,7 +178,7 @@
 
 ✅ PUT - reservations/reservation (예약 거절)
 
-- 예약 번호와 거절 사유를 RequestBody로 받고 거절된 예약 번호를 반환
+- 예약 번호와 거절 사유를 RequestBody로 받고 예약 상세 정보를 반환
 - <details>
     <summary>에러</summary>
 
@@ -193,7 +193,7 @@
 
 ✅ PUT - reservations/reservation/visit (방문 인증)
 
-- 회원 아이디와 예약 번호와 매장 이름을 RequestBody로 받고 방문 인증된 예약 번호를 반환
+- 회원 아이디와 예약 번호와 매장 이름을 RequestBody로 받고 예약 상세 정보를 반환
 - <details>
     <summary>에러</summary>
 
