@@ -1,5 +1,6 @@
 package com.jh.restaurantreservationpj.review.service;
 
+import com.jh.restaurantreservationpj.config.CacheKey;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
@@ -17,6 +18,9 @@ import com.jh.restaurantreservationpj.review.exception.ReviewErrorCode;
 import com.jh.restaurantreservationpj.review.exception.ReviewException;
 import com.jh.restaurantreservationpj.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +59,8 @@ public class ReviewService {
     }
 
     // 리뷰 수정 서비스
-    public ModifyReviewDto.Response modifyReview(Long id, String memberId, ModifyReviewDto.Request request) {
+    @CachePut(key = "#id", value = CacheKey.REVIEW_KEY)
+    public CheckReviewDto.Response modifyReview(Long id, String memberId, ModifyReviewDto.Request request) {
         Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewException(ReviewErrorCode.NOT_FOUND_REVIEW));
 
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
@@ -70,16 +75,17 @@ public class ReviewService {
                 .build();
         Review modifiedReview = reviewRepository.save(modify);
 
-        return modifiedReview.toModifyResponse();
+        return modifiedReview.toCheckResponse();
     }
 
     // 리뷰 삭제 서비스
+    @CacheEvict(key = "#id", value = CacheKey.REVIEW_KEY)
     public Long deleteReview(Long id, String memberId) {
 
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewException(ReviewErrorCode.NOT_FOUND_REVIEW));
-        
+
         MemberRole memberRole = member.getMemberRoles().stream().filter(r -> r.getRole().getName().equals("ADMIN")).findAny().orElse(null);
         if (memberRole == null) {
             if (review.getMember() != member) { // 관리자가 아닐 때 리뷰를 작성한 회원이 아닌 경우
@@ -101,6 +107,8 @@ public class ReviewService {
     }
 
     // 리뷰 상세 조회 서비스
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#id", value = CacheKey.REVIEW_KEY)
     public CheckReviewDto.Response checkReview(Long id) {
 
         Review review = reviewRepository.findById(id).orElseThrow(() -> new ReviewException(ReviewErrorCode.NOT_FOUND_REVIEW));
@@ -109,6 +117,7 @@ public class ReviewService {
     }
 
     // 리뷰 전체 리스트 조회 서비스
+    @Transactional(readOnly = true)
     public Page<CheckReviewDto.Response> checkReviewList(Pageable pageable) {
         Page<Review> reviewList = reviewRepository.findAll(pageable);
         List<Review> content = reviewList.getContent();
