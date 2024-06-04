@@ -17,6 +17,7 @@ import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -77,7 +78,8 @@ public class ReservationService {
     예약 수정은 불가 대신 취소 가능
     취소는 예약 시간 1시간 전까지만 가능
      */
-    public String cancelReservation(String memberId, CancelReservationDto.Request request) {
+    @CachePut(key = "#request.reservationNumber", value = CacheKey.RESERVATION_KEY)
+    public CheckForMemberReservationDto.Response cancelReservation(String memberId, CancelReservationDto.Request request) {
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         String reservationNumber = request.getReservationNumber();
@@ -109,11 +111,12 @@ public class ReservationService {
                 .build();
         reservationRepository.save(canceledReservation);
 
-        return canceledReservation.getReservationNumber();
+        return checkForReservation(canceledReservation);
     }
 
     // 예약 승인 서비스
-    public String acceptReservation(String managerId, String reservationNumber) {
+    @CachePut(key = "#reservationNumber", value = CacheKey.RESERVATION_KEY)
+    public CheckForMemberReservationDto.Response acceptReservation(String managerId, String reservationNumber) {
         Member manager = memberRepository.findByUserId(managerId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         Reservation reservation = reservationRepository.findByReservationNumberAndDelDate(reservationNumber, null).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
@@ -132,11 +135,12 @@ public class ReservationService {
                 .build();
         reservationRepository.save(acceptedReservation);
 
-        return acceptedReservation.getReservationNumber();
+        return checkForReservation(acceptedReservation);
     }
 
     // 예약 거절 서비스
-    public String denyReservation(String managerId, DenyReservationDto.Request request) {
+    @CachePut(key = "#request.reservationNumber", value = CacheKey.RESERVATION_KEY)
+    public CheckForMemberReservationDto.Response denyReservation(String managerId, DenyReservationDto.Request request) {
         Member manager = memberRepository.findByUserId(managerId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         String reservationNumber = request.getReservationNumber();
@@ -158,11 +162,12 @@ public class ReservationService {
                 .build();
         reservationRepository.save(deniedReservation);
 
-        return deniedReservation.getReservationNumber();
+        return checkForReservation(deniedReservation);
     }
 
     // 예약 방문 인증 서비스
-    public String useReservation(UseReservationDto.Request request) {
+    @CachePut(key = "#request.reservationNumber", value = CacheKey.RESERVATION_KEY)
+    public CheckForMemberReservationDto.Response useReservation(UseReservationDto.Request request) {
         String userId = request.getUserId();
         String reservationNumber = request.getReservationNumber();
         String restaurantName = request.getRestaurantName().trim();
@@ -204,7 +209,7 @@ public class ReservationService {
                 .build();
         memberRepository.save(withReviewRole);
 
-        return reservationNumber;
+        return checkForReservation(reservation);
     }
 
     // 예약 상세 조회 서비스
