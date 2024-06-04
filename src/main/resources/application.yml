@@ -8,7 +8,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     database: mysql
     properties:
       hibernate:
@@ -17,19 +17,13 @@ spring:
         highlight_sql: true
 
   datasource:
-    username: ${MYSQL_USER_NAME}
-    password: ${MYSQL_PASSWORD}
+    username: ${MYSQL_USER_NAME} # 환경 변수
+    password: ${MYSQL_PASSWORD} # 환경 변수
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/reservationpj?characterEncoding=UTF-8
 
-  batch:
-    jdbc:
-      initialize-schema: always # batch 관련 테이블 자동 생성
-    job:
-      enabled: false # 자동 실행 false
-
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET} # 환경 변수
 
 logging:
   level:
