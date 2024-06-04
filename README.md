@@ -10,6 +10,7 @@
 
 - SpringBoot 3.2.5
 - SpringSecurity
+- Redis
 - Java 17
 - JPA
 - MySql
@@ -23,6 +24,7 @@
 - 예약 완료 후 예약 시간 10분 전까지 매장에 방문하여 방문 인증을 진행하는 기능
 - 매장 이용 후 리뷰를 작성하는 기능 -> 리뷰 CRUD
 - 회원 권한 부여(점장 : ADMIN, 회원 : READ, 리뷰 작성 가능 : WRITE)
+- Redis를 통해 상세 정보 조회 시 시간 단축
 
 # ERD
 
