@@ -41,6 +41,7 @@ public class ReservationService {
 
     // 회원이 예약 생성하는 서비스
     // 예약은 당일 예약만 가능
+    // 20시 전까지만 예약 가능
     public CreateReservationDto.Response createReservation(String memberId, CreateReservationDto.Request request) {
         Member member = memberRepository.findByUserId(memberId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
@@ -297,9 +298,10 @@ public class ReservationService {
         LocalDateTime restaurantCloseTime = openTime > closeTime ? stringToTomorrowLocalDateTime(restaurant.getCloseTime()) : stringToTodayLocalDateTime(restaurant.getCloseTime()); // 매장 마감 시간
 
         LocalDateTime hopeTime = stringToTodayLocalDateTime(reservationTime); // 희망 예약 시간
+        LocalDateTime lastTime = stringToTodayLocalDateTime("20"); // 예약은 20시 전까지만 가능
 
-        // 예약하고자 하는 시간이 현재 시간보다 이전이거나 매장 오픈시간보다 이전인지 또는 매장 마감시간 이후인지 확인
-        if (hopeTime.isBefore(now) || hopeTime.isBefore(restaurantOpenTime) || hopeTime.isAfter(restaurantCloseTime)) {
+        // 예약하고자 하는 시간이 현재 시간보다 이전이거나 20시 이후인지 또는 매장 오픈시간보다 이전인지 또는 매장 마감시간 이후인지 확인
+        if (hopeTime.isBefore(now) || hopeTime.isAfter(lastTime) || hopeTime.isBefore(restaurantOpenTime) || hopeTime.isAfter(restaurantCloseTime)) {
             throw new ReservationException(ReservationErrorCode.IMPOSSIBLE_RESERVATION);
         }
     }
