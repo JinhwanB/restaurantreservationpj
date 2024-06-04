@@ -32,7 +32,7 @@
 
 ## 회원
 
-1. POST - auth/signup (회원 가입)
+✅ POST - auth/signup (회원 가입)
 
 - 아이디와 비밀번호, 권한(admin, read, write)을 RequestBody로 받고 회원 아이디를 반환
 - <details>
@@ -42,7 +42,7 @@
   >- 아이디가 중복인 경우 400 status 코드와 에러메시지 반환
   </details>
 
-2. POST - auth/signin (로그인)
+✅ POST - auth/signin (로그인)
 
 - 아이디와 비밀번호를 RequestBody로 받고 토큰을 반환
 - <details>
@@ -56,7 +56,7 @@
 
 ## 매장
 
-1. POST - restaurants/restaurant (매장 등록)
+✅ POST - restaurants/restaurant (매장 등록)
 
 - 매장 이름, 주소, 설명, 오픈 시간, 마감 시간을 RequestBody로 받고 매장 이름을 반환
 - 오픈 시간과 마감 시간은 문자열로 받음 (예: 00 ~ 23)
@@ -71,7 +71,7 @@
 
  </details>
 
-2. PUT - restaurants/restaurant/{restaurantName} (매장 수정)
+✅ PUT - restaurants/restaurant/{restaurantName} (매장 수정)
 
 - 매장 이름을 PathVariable로 수정할 내용(매장 이름, 주소, 설명, 오픈 시간, 마감 시간)을 RequestBody로 받고 변경된 내용을 반환
 - 오픈 시간과 마감 시간은 문자열로 받음 (예: 00 ~ 23)
@@ -88,7 +88,7 @@
 
  </details>
 
-3. DELETE - restaurants/restaurant/{restaurantName} (매장 삭제)
+✅ DELETE - restaurants/restaurant/{restaurantName} (매장 삭제)
 
 - 매장 이름을 PathVariable로 받고 삭제된 매장 이름을 반환
 - <details>
@@ -101,7 +101,7 @@
 
  </details>
 
-4. GET - restaurants/search (매장 검색)
+✅ GET - restaurants/search (매장 검색)
 
 - 검색어를 RequestParam으로 받고 매장 리스트를 반환
 - 검색한 문자로 시작하거나 문자를 포함한 매장을 오름차순으로 정렬하고 페이징 처리하여 반환
@@ -112,7 +112,7 @@
 
  </details>
 
-5. GET - restaurants/restaurant/{restaurantName} (매장 상세 조회)
+✅ GET - restaurants/restaurant/{restaurantName} (매장 상세 조회)
 
 - 매장 이름을 PathVariable로 받고 매장 상세 정보를 반환
 - <details>
@@ -123,13 +123,13 @@
 
  </details>
 
-6. GET - restaurants (매장 전체 리스트 조회)
+✅ GET - restaurants (매장 전체 리스트 조회)
 
 - 매장 전체 리스트를 이름을 기준으로 오름차순 정렬하고 페이징 처리하여 반환
 
 ## 예약
 
-1. POST - reservations/reservation (예약 생성)
+✅ POST - reservations/reservation (예약 생성)
 
 - 매장 이름과 예약 시간을 RequestBody로 받고 예약 번호와 예약한 회원의 아이디와 예약한 매장 이름과 예약 시간을 반환
 - 예약은 당일 예약만 가능
@@ -145,7 +145,7 @@
 
  </details>
 
-2. DELETE - reservations/reservation (예약 취소)
+✅ DELETE - reservations/reservation (예약 취소)
 
 - 예약 번호와 취소 사유를 RequestBody로 받고 최소된 예약 번호를 반환
 - 예약 시간 1시간 전까지 취소 가능
@@ -162,7 +162,7 @@
 
  </details>
 
-3. PUT - reservations/reservation/{reservationNumber} (예약 승인)
+✅ PUT - reservations/reservation/{reservationNumber} (예약 승인)
 
 - 예약 번호를 PathVariable로 받고 승인된 예약 번호를 반환
 - <details>
@@ -176,7 +176,7 @@
 
  </details>
 
-4. PUT - reservations/reservation (예약 거절)
+✅ PUT - reservations/reservation (예약 거절)
 
 - 예약 번호와 거절 사유를 RequestBody로 받고 거절된 예약 번호를 반환
 - <details>
@@ -191,7 +191,7 @@
 
  </details>
 
-5. PUT - reservations/reservation/visit (방문 인증)
+✅ PUT - reservations/reservation/visit (방문 인증)
 
 - 회원 아이디와 예약 번호와 매장 이름을 RequestBody로 받고 방문 인증된 예약 번호를 반환
 - <details>
@@ -207,7 +207,7 @@
 
  </details>
 
-6. GET - reservations/reservation/search/{reservationNumber} (예약 상세 조회)
+✅ GET - reservations/reservation/search/{reservationNumber} (예약 상세 조회)
 
 - 예약 번호를 PathVariable로 받고 예약 상세 정보를 반환
 - <details>
@@ -221,7 +221,7 @@
 
  </details>
 
-7. GET - reservations/search/{restaurantName} (점장이 예약 목록을 조회)
+✅ GET - reservations/search/{restaurantName} (점장이 예약 목록을 조회)
 
 - 매장 이름을 PathVariable로 받고 조회된 예약 목록을 반환
 - 먼저 예약한 순으로 정렬, 페이징 처리하여 반환
@@ -235,7 +235,7 @@
 
  </details>
 
-8. GET - reservations/search (회원이 예약 목록을 조회)
+✅ GET - reservations/search (회원이 예약 목록을 조회)
 
 - 예약 목록을 반환
 - <details>
@@ -249,7 +249,7 @@
 
 ## 리뷰
 
-1. POST - reviews/review (리뷰 생성)
+✅ POST - reviews/review (리뷰 생성)
 
 - 매장 이름과 제목, 내용을 RequestBody로 받고 작성된 리뷰의 PK와 제목과 내용을 반환
 - <details>
@@ -261,7 +261,7 @@
 
  </details>
 
-2. PUT - reviews/review/{id} (리뷰 수정)
+✅ PUT - reviews/review/{id} (리뷰 수정)
 
 - 수정할 리뷰의 PK를 PathVariable로 받고 수정할 제목과 내용을 RequestBody로 받고 수정된 리뷰의 PK와 제목과 내용을 반환
 - <details>
@@ -275,7 +275,7 @@
 
  </details>
 
-3. DELETE - reviews/review/{id} (리뷰 삭제)
+✅ DELETE - reviews/review/{id} (리뷰 삭제)
 
 - 삭제할 리뷰 PK를 PathVariable로 받고 삭제된 리뷰의 PK를 반환
 - <details>
@@ -289,7 +289,7 @@
 
  </details>
 
-4. GET - reviews/search/{id} (리뷰 상세 조회)
+✅ GET - reviews/search/{id} (리뷰 상세 조회)
 
 - 조회할 리뷰의 PK를 PathVariable로 받고 조회된 리뷰의 상세 정보 반환
 - <details>
@@ -300,6 +300,6 @@
 
  </details>
 
-5. GET - reviews/search (리뷰 전체 리스트 조회)
+✅ GET - reviews/search (리뷰 전체 리스트 조회)
 
 - 리뷰의 전체 리스트를 반환
