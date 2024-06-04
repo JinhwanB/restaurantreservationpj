@@ -263,7 +263,7 @@
 
 ✅ PUT - reviews/review/{id} (리뷰 수정)
 
-- 수정할 리뷰의 PK를 PathVariable로 받고 수정할 제목과 내용을 RequestBody로 받고 수정된 리뷰의 PK와 제목과 내용을 반환
+- 수정할 리뷰의 PK를 PathVariable로 받고 수정할 제목과 내용을 RequestBody로 받고 수정된 리뷰의 상세 정보를 반환
 - <details>
     <summary>에러</summary>
 
