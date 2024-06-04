@@ -41,10 +41,10 @@ public class ReservationController {
     // 회원이 예약 취소하는 컨트롤러
     @DeleteMapping("/reservation")
     @PreAuthorize("hasRole('READ')")
-    public ResponseEntity<GlobalResponse<String>> cancel(@Valid @RequestBody CancelReservationDto.Request request, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> cancel(@Valid @RequestBody CancelReservationDto.Request request, HttpServletRequest servletRequest) {
         String memberId = tokenProvider.getUserId(servletRequest);
 
-        String response = reservationService.cancelReservation(memberId, request);
+        CheckForMemberReservationDto.Response response = reservationService.cancelReservation(memberId, request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
@@ -52,10 +52,10 @@ public class ReservationController {
     // 예약 승인 컨트롤러
     @PutMapping("/reservation/{reservationNumber}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<String>> accept(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리의 숫자입니다.") @PathVariable String reservationNumber, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> accept(@NotBlank(message = "예약 번호를 입력해주세요.") @Pattern(regexp = "\\d{8}", message = "예약 번호는 8자리의 숫자입니다.") @PathVariable String reservationNumber, HttpServletRequest servletRequest) {
         String managerId = tokenProvider.getUserId(servletRequest);
 
-        String response = reservationService.acceptReservation(managerId, reservationNumber);
+        CheckForMemberReservationDto.Response response = reservationService.acceptReservation(managerId, reservationNumber);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
@@ -63,18 +63,18 @@ public class ReservationController {
     // 예약 거절 컨트롤러
     @PutMapping("/reservation")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GlobalResponse<String>> deny(@Valid @RequestBody DenyReservationDto.Request request, HttpServletRequest servletRequest) {
+    public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> deny(@Valid @RequestBody DenyReservationDto.Request request, HttpServletRequest servletRequest) {
         String managerId = tokenProvider.getUserId(servletRequest);
 
-        String response = reservationService.denyReservation(managerId, request);
+        CheckForMemberReservationDto.Response response = reservationService.denyReservation(managerId, request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
 
     // 방문 인증 컨트롤러
     @PutMapping("/reservation/visit")
-    public ResponseEntity<GlobalResponse<String>> visit(@Valid @RequestBody UseReservationDto.Request request) {
-        String response = reservationService.useReservation(request);
+    public ResponseEntity<GlobalResponse<CheckForMemberReservationDto.Response>> visit(@Valid @RequestBody UseReservationDto.Request request) {
+        CheckForMemberReservationDto.Response response = reservationService.useReservation(request);
 
         return ResponseEntity.ok(GlobalResponse.toGlobalResponse(response));
     }
