@@ -22,10 +22,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/reservationpj?characterEncoding=UTF-8
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  batch:
+    jdbc:
+      initialize-schema: always # batch 관련 테이블 자동 생성
+    job:
+      enabled: false # 자동 실행 false
 
   jwt:
     secret: ${JWT_SECRET}
