@@ -1,5 +1,6 @@
 package com.jh.restaurantreservationpj.reservation.service;
 
+import com.jh.restaurantreservationpj.config.CacheKey;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.domain.MemberRole;
 import com.jh.restaurantreservationpj.member.domain.Role;
@@ -16,6 +17,7 @@ import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -206,10 +208,15 @@ public class ReservationService {
     }
 
     // 예약 상세 조회 서비스
+    @Cacheable(key = "#reservationNumber", value = CacheKey.RESERVATION_KEY)
     public CheckForMemberReservationDto.Response checkReservation(String userId, String reservationNumber) {
         Member member = memberRepository.findByUserId(userId).orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND_MEMBER));
 
         Reservation reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+
+        if (validUsefulReservation(reservation)) { // 방문 인증 시간 지났는지 확인하여 지났을 시 자동 취소 처리
+            reservation = reservationRepository.findByReservationNumber(reservationNumber).orElseThrow(() -> new ReservationException(ReservationErrorCode.NOT_FOUND_RESERVATION));
+        }
 
         MemberRole memberRole = member.getMemberRoles().stream() // 회원이 관리자(점장)이 아닌 경우 null
                 .filter(r -> r.getRole().getName().equals("ADMIN"))
@@ -336,7 +343,7 @@ public class ReservationService {
         LocalDateTime reservationTime = stringToTodayLocalDateTime(reservation.getReservationTime());
         LocalDateTime visitTime = reservationTime.minusMinutes(10);
 
-        if (Boolean.TRUE.equals(reservation.getIsAccept()) && !reservation.isVisit() && now.isAfter(visitTime)) { // 이미 방문 인증 시간이 지난 경우 자동 취소 처리
+        if (!reservation.isVisit() && now.isAfter(visitTime)) { // 이미 방문 인증 시간이 지난 경우 자동 취소 처리
             Reservation autoCancel = reservation.toBuilder()
                     .isAccept(false)
                     .isVisit(false)
