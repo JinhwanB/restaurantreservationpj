@@ -1,5 +1,6 @@
 package com.jh.restaurantreservationpj.restaurant.service;
 
+import com.jh.restaurantreservationpj.config.CacheKey;
 import com.jh.restaurantreservationpj.member.domain.Member;
 import com.jh.restaurantreservationpj.member.exception.MemberErrorCode;
 import com.jh.restaurantreservationpj.member.exception.MemberException;
@@ -12,6 +13,9 @@ import com.jh.restaurantreservationpj.restaurant.exception.RestaurantErrorCode;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +56,8 @@ public class RestaurantService {
     }
 
     // 매장 수정 서비스
+    @CacheEvict(key = "#restaurantName", value = CacheKey.RESTAURANT_KEY)
+    @CachePut(key = "#request.name", value = CacheKey.RESTAURANT_KEY)
     public CheckRestaurantDto.Response modifyRestaurant(String userId, String restaurantName, ModifiedRestaurantDto.Request request) {
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
@@ -79,6 +85,7 @@ public class RestaurantService {
     }
 
     // 매장 삭제 서비스
+    @CacheEvict(key = "#restaurantName", value = CacheKey.RESTAURANT_KEY)
     public String deleteRestaurant(String userId, String restaurantName) {
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
@@ -107,6 +114,7 @@ public class RestaurantService {
     }
 
     // 매장 상세 조회 서비스
+    @Cacheable(key = "#name", value = CacheKey.RESTAURANT_KEY)
     @Transactional(readOnly = true)
     public CheckRestaurantDto.Response checkRestaurant(String name) {
         Restaurant restaurant = restaurantRepository.findByName(name).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
