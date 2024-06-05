@@ -15,7 +15,7 @@ public enum ReservationErrorCode {
     DIFF_RESERVATION_MEMBER(400, "예약한 회원과 다른 회원입니다."),
     DIFF_RESERVATION_RESTAURANT(400, "예약한 매장과 다른 매장입니다."),
     IMPOSSIBLE_RESERVATION(400, "해당 시간에 예약할 수 없습니다."),
-    IMPOSSIBLE_RESERVATION_FOR_DENIED(400, "이미 거절된 예약 시간입니다. 이유 = "),
+    IMPOSSIBLE_RESERVATION_FOR_DENIED(400, "이미 거절된 예약 시간입니다."),
     IMPOSSIBLE_CANCEL(400, "예약 취소는 예약한 시간 1시간 전까지만 가능합니다."),
     IMPOSSIBLE_VISIT(400, "현재 예약이 승인되지 않았거나 취소된 예약입니다."),
     NOT_FOUND_RESERVATION(400, "예약 정보가 없습니다.");
