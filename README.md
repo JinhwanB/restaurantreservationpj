@@ -129,7 +129,7 @@
 
 - 매장 전체 리스트를 이름을 기준으로 오름차순 정렬하고 페이징 처리하여 반환
 
-## 예약 -> [Servuce](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/reservation/service/ReservationService.java), [Controller](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/reservation/controller/ReservationController.java)
+## 예약 -> [Service](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/reservation/service/ReservationService.java), [Controller](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/reservation/controller/ReservationController.java)
 
 ✅ POST - reservations/reservation (예약 생성)
 
