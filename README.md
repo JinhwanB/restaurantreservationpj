@@ -25,6 +25,8 @@
 - 매장 이용 후 리뷰를 작성하는 기능 -> 리뷰 CRUD
 - 회원 권한 부여(점장 : ADMIN, 회원 : READ, 리뷰 작성 가능 : WRITE)
 - Redis를 통해 상세 정보 조회 시 시간 단축
+- RestControllerAdvice를 통한 400, 401, 403, 404, 405, 500 에러
+  핸들링 -> [ExceptionHandler](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/config/GlobalExceptionHandler.java)
 
 # ERD
 
