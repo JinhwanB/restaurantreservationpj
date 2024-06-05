@@ -103,4 +103,12 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(GlobalResponse.toGlobalResponseFail(e.getReviewErrorCode().getStatus(), e.getReviewErrorCode().getMessage()));
     }
+
+    // 예상하지 못한 에러 -> 500 에러
+    @ExceptionHandler(RuntimeException.class)
+    private ResponseEntity<GlobalResponse<?>> handleNonExpectedExceptionHandler(RuntimeException e) {
+        log.error("예상하지 못한 exception = {}", e.getMessage());
+
+        return ResponseEntity.internalServerError().body(GlobalResponse.toGlobalResponseFail(500, e.getMessage()));
+    }
 }
