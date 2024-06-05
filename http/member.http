@@ -1,0 +1,21 @@
+### 회원 가입
+### 회원 권한 입력 : admin -> 관리자, read -> 일반 회원, write -> 리뷰 권한
+POST http://localhost:8080/auth/signup
+Content-Type: application/json
+
+{
+  "userId": "manager",
+  "password": "1234",
+  "roles": [
+    "admin"
+  ]
+}
+
+### 로그인
+POST http://localhost:8080/auth/signin
+Content-Type: application/json
+
+{
+  "userId": "manager",
+  "password": "1234"
+}
