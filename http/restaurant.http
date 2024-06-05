@@ -1,0 +1,39 @@
+### 매장 등록
+POST http://localhost:8080/restaurants/restaurant
+Content-Type: application/json
+Authorization: Bearer {토큰 입력}
+
+{
+  "name": "매장",
+  "totalAddress": "주소",
+  "description": "설명",
+  "openTime": "09",
+  "closeTime": "22"
+}
+
+### 매장 수정
+PUT http://localhost:8080/restaurants/restaurant/{{restaurantName}}
+Content-Type: application/json
+Authorization: Bearer {토큰 입력}
+
+{
+  "name": "",
+  "totalAddress": "",
+  "description": "",
+  "openTime": "",
+  "closeTime": ""
+}
+
+### 매장 삭제
+DELETE http://localhost:8080/restaurants/restaurant/{{restaurantName}}
+Authorization: Bearer {토큰 입력}
+
+### 매장 검색
+GET http://localhost:8080/restaurants/search?
+    word={{$random.alphanumeric(8)}}
+
+### 매장 상세 조회
+GET http://localhost:8080/restaurants/restaurant/{{restaurantName}}
+
+### 매장 전체 리스트 조회
+GET http://localhost:8080/restaurants
