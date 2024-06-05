@@ -1,0 +1,55 @@
+### 예약 생성
+POST http://localhost:8080/reservations/reservation
+Content-Type: application/json
+Authorization: Bearer {토큰 입력}
+
+{
+  "restaurantName": "",
+  "time": ""
+}
+
+### 예약 취소
+DELETE http://localhost:8080/reservations/reservation
+Content-Type: application/json
+Authorization: Bearer {토큰 입력}
+
+{
+  "reservationNumber": "",
+  "reason": ""
+}
+
+### 예약 승인
+PUT http://localhost:8080/reservations/reservation/{{reservationNumber}}
+Authorization: Bearer {토큰 입력}
+
+### 예약 거절
+PUT http://localhost:8080/reservations/reservation
+Content-Type: application/json
+Authorization: Bearer {토큰 입력}
+
+{
+  "restaurantName": "",
+  "time": ""
+}
+
+### 방문 인증
+PUT http://localhost:8080/reservations/reservation/visit
+Content-Type: application/json
+
+{
+  "userId": "",
+  "reservationNumber": "",
+  "restaurantName": ""
+}
+
+### 예약 상세 조회
+GET http://localhost:8080/reservations/reservation/search/{{reservationNumber}}
+Authorization: Bearer {토큰 입력}
+
+### 점장이 예약 목록 조회
+GET http://localhost:8080/reservations/search/{{restaurantName}}
+Authorization: Bearer {토큰 입력}
+
+### 회원이 예약 목록 조회
+GET http://localhost:8080/reservations/search
+Authorization: Bearer {토큰 입력}
