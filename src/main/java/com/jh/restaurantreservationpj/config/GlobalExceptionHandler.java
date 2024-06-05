@@ -1,6 +1,7 @@
 package com.jh.restaurantreservationpj.config;
 
 import com.jh.restaurantreservationpj.member.exception.MemberException;
+import com.jh.restaurantreservationpj.reservation.exception.ReservationException;
 import com.jh.restaurantreservationpj.restaurant.exception.RestaurantException;
 import com.jh.restaurantreservationpj.review.exception.ReviewException;
 import jakarta.validation.ConstraintViolation;
@@ -77,6 +78,14 @@ public class GlobalExceptionHandler {
         log.error("매장 관련 exception = {}", e.getRestaurantErrorCode().getMessage());
 
         return ResponseEntity.badRequest().body(GlobalResponse.toGlobalResponseFail(e.getRestaurantErrorCode().getStatus(), e.getRestaurantErrorCode().getMessage()));
+    }
+
+    // 예약 관련 에러 핸들러 -> 400 에러
+    @ExceptionHandler(ReservationException.class)
+    private ResponseEntity<GlobalResponse<?>> handleReservationException(ReservationException e) {
+        log.error("예약 관련 exception = {}", e.getReservationErrorCode().getMessage());
+
+        return ResponseEntity.badRequest().body(GlobalResponse.toGlobalResponseFail(e.getReservationErrorCode().getStatus(), e.getReservationErrorCode().getMessage()));
     }
 
     // 회원 관련 에러 핸들러 -> 400에러
