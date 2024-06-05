@@ -4,7 +4,7 @@
 
 # 프로젝트 기간
 
-2024.05.20 ~ 2024.06.xx
+2024.05.20 ~ 2024.06.05
 
 # 기술 스택
 
@@ -30,9 +30,9 @@
 
 ![img.png](img.png)
 
-# 최종 구현 API
+# 최종 구현 API -> [Http Request](https://github.com/JinhwanB/restaurantreservationpj/tree/main/http)
 
-## 회원
+## 회원 -> [Service](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/member/service/MemberService.java), [Controller](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/member/controller/MemberController.java)
 
 ✅ POST - auth/signup (회원 가입)
 
@@ -44,7 +44,7 @@
   >- 아이디가 중복인 경우 400 status 코드와 에러메시지 반환
   </details>
 
-✅ POST - auth/signin (로그인)
+✅ POST - auth/signin (로그인) -> 
 
 - 아이디와 비밀번호를 RequestBody로 받고 토큰을 반환
 - <details>
@@ -56,7 +56,7 @@
 
  </details>
 
-## 매장
+## 매장 -> [Service](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/restaurant/service/RestaurantService.java), [Controller](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/restaurant/controller/RestaurantController.java)
 
 ✅ POST - restaurants/restaurant (매장 등록)
 
@@ -129,7 +129,7 @@
 
 - 매장 전체 리스트를 이름을 기준으로 오름차순 정렬하고 페이징 처리하여 반환
 
-## 예약
+## 예약 -> [Servuce](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/reservation/service/ReservationService.java), [Controller](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/reservation/controller/ReservationController.java)
 
 ✅ POST - reservations/reservation (예약 생성)
 
@@ -249,7 +249,7 @@
 
  </details>
 
-## 리뷰
+## 리뷰 -> [Service](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/review/service/ReviewService.java), [Controller](https://github.com/JinhwanB/restaurantreservationpj/blob/main/src/main/java/com/jh/restaurantreservationpj/review/controller/ReviewController.java)
 
 ✅ POST - reviews/review (리뷰 생성)
 
