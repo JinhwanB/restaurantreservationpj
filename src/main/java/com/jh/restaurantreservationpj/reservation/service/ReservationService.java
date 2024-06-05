@@ -72,7 +72,7 @@ public class ReservationService {
                 })
                 .findFirst()
                 .orElse(null);
-        if (previousReservation != null) {
+        if (previousReservation != null) { // 겹치는 예약이 있는 경우
             throw new ReservationException(ReservationErrorCode.ALREADY_EXIST_RESERVATION);
         }
 
