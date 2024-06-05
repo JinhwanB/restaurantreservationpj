@@ -1,0 +1,30 @@
+### 리뷰 생성
+POST http://localhost:8080/reviews/review
+Content-Type: application/json
+Authorization: Bearer {토큰 입력}
+
+{
+  "restaurantName": "",
+  "title": "",
+  "content": ""
+}
+
+### 리뷰 수정
+PUT http://localhost:8080/reviews/review/{{id}}
+Content-Type: application/json
+Authorization: Bearer {토큰 입력}
+
+{
+  "title": "",
+  "content": ""
+}
+
+### 리뷰 삭제
+DELETE http://localhost:8080/reviews/review/{{id}}
+Authorization: Bearer {토큰 입력}
+
+### 리뷰 상세 조회
+GET http://localhost:8080/reviews/search/{{id}}
+
+### 리뷰 전체 리스트 조회
+GET http://localhost:8080/reviews/search
