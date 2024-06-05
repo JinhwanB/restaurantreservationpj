@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,5 +24,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     boolean existsByReservationNumberAndDelDate(String reservationNumber, LocalDateTime delDate); // 삭제되지 않은 예약 중 예약 번호의 중복 여부
 
-    boolean existsByReservationMemberAndReservationRestaurantAndDelDate(Member reservationMember, Restaurant reservationRestaurant, LocalDateTime delDate); // 이미 진행 중인 예약이 있는지 확인하는 쿼리 메소드
+    List<Reservation> findAllByReservationMemberAndReservationRestaurant(Member reservationMember, Restaurant reservationRestaurant); // 회원이 매장에 예약한 리스트 조회
 }
