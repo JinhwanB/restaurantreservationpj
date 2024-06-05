@@ -51,8 +51,28 @@ public class ReservationService {
         String restaurantName = request.getRestaurantName().trim();
         Restaurant restaurant = restaurantRepository.findByName(restaurantName).orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
-        // 이미 같은 매장에 진행 중인 예약이 있는 경우
-        if (reservationRepository.existsByReservationMemberAndReservationRestaurantAndDelDate(member, restaurant, null)) {
+        // 이미 같은 매장에 진행 중인 예약이 있는 경우 확인
+        List<Reservation> reservationList = reservationRepository.findAllByReservationMemberAndReservationRestaurant(member, restaurant);
+        Reservation previousReservation = reservationList.stream()
+                .filter(r -> {
+                    LocalDateTime curReservationTime = stringToTodayLocalDateTime(request.getTime());
+                    LocalDateTime reservationTime = stringToTodayLocalDateTime(r.getReservationTime());
+
+                    if (r.getDelDate() != null) { // 승인 또는 거절 또는 취소된 예약인 경우
+                        if (Boolean.FALSE.equals(r.getIsAccept()) && curReservationTime.isEqual(reservationTime)) { // 거절된 예약과 같은 시간으로 예약하는 경우
+                            throw new ReservationException(ReservationErrorCode.IMPOSSIBLE_RESERVATION_FOR_DENIED);
+                        }
+
+                        // 승인된 예약이며 현재 예약하고자 하는 시간과 겹치는 경우
+                        return Boolean.TRUE.equals(r.getIsAccept()) && curReservationTime.isEqual(reservationTime);
+                    }
+
+                    // 대기중인 예약이 있고 현재 예약하고자 하는 시간과 겹치는 경우
+                    return curReservationTime.isEqual(reservationTime);
+                })
+                .findFirst()
+                .orElse(null);
+        if (previousReservation != null) {
             throw new ReservationException(ReservationErrorCode.ALREADY_EXIST_RESERVATION);
         }
 
@@ -105,7 +125,7 @@ public class ReservationService {
         String reason = request.getReason().trim();
         Reservation canceledReservation = reservation.toBuilder()
                 .isCancel(true)
-                .isAccept(false)
+                .isAccept(null)
                 .deniedMessage(reason)
                 .delDate(LocalDateTime.now())
                 .build();
@@ -350,7 +370,7 @@ public class ReservationService {
 
         if (!reservation.isVisit() && now.isAfter(visitTime)) { // 이미 방문 인증 시간이 지난 경우 자동 취소 처리
             Reservation autoCancel = reservation.toBuilder()
-                    .isAccept(false)
+                    .isAccept(null)
                     .isVisit(false)
                     .isCancel(true)
                     .deniedMessage(AUTO_CANCEL_MESSAGE)
