@@ -32,6 +32,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+/*
+예약은 처음 생성 시 delDate 는 null
+예약 승인, 거절, 취소, 방문 인증 처리 되는 경우 처리된 날짜로 delDate 변경
+ */
 public class ReservationService {
 
     private final RestaurantRepository restaurantRepository;
